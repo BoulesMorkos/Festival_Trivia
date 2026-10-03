@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Festival Trivia</title>
+<style>
+:root{
+  --paper:#f5ecd7; --paper2:#ecdfc1; --ink:#2b1a14; --muted:#7a6552;
+  --wine:#6e1423; --wine2:#4d0d18; --gold:#c9982f; --gold2:#e9c873;
+  --teal:#1d5c59; --ok:#2e7d4f; --bad:#b3261e; --line:#d8c7a2;
+  --serif:"Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{font-family:var(--sans);color:var(--ink);background:var(--paper);touch-action:manipulation;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+.app{display:grid;grid-template-columns:minmax(0,1fr) clamp(250px,31vw,380px);height:100vh;height:100dvh}
+
+/* ---------- stage (left) ---------- */
+.stage{display:flex;flex-direction:column;min-width:0;height:100%;overflow:hidden;
+  background:radial-gradient(1200px 500px at 20% -10%,#fff8e6 0,transparent 60%),var(--paper)}
+.top{display:flex;align-items:center;gap:12px;padding:14px 22px;border-bottom:1px solid var(--line)}
+.top svg{width:30px;height:30px;flex:none}
+.top h1{font-family:var(--serif);font-size:22px;margin:0;letter-spacing:.3px;color:var(--wine)}
+.top .sp{flex:1}
+.pill{font-size:13px;color:var(--muted)}
+.view{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;padding:22px;display:flex;flex-direction:column}
+.center{margin:auto;width:100%;max-width:640px;text-align:center}
+
+/* start */
+.kicker{font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.big{font-family:var(--serif);font-size:clamp(34px,5vw,54px);line-height:1.05;margin:10px 0 8px;color:var(--wine)}
+.sub{color:var(--muted);font-size:17px;margin:0 0 26px}
+.name{width:100%;font:600 24px var(--sans);padding:16px 18px;border:2px solid var(--line);border-radius:14px;
+  background:#fffdf6;color:var(--ink);text-align:center;outline:none;-webkit-appearance:none}
+.name:focus{border-color:var(--gold)}
+.go{margin-top:16px;width:100%;border:0;border-radius:14px;padding:18px;font:800 28px var(--serif);letter-spacing:.12em;
+  color:#fff7e0;background:linear-gradient(180deg,var(--wine),var(--wine2));box-shadow:0 6px 0 #32070f,0 14px 24px rgba(77,13,24,.25)}
+.go:active{transform:translateY(4px);box-shadow:0 2px 0 #32070f}
+.gos{display:flex;gap:12px}.gos .go{flex:1}
+.go.ar{font-family:var(--sans);letter-spacing:0}
+[dir=rtl] .qtext,[dir=rtl] .who{font-family:var(--sans);line-height:1.5}
+[dir=rtl] .kicker,[dir=rtl] .tag{letter-spacing:0}
+.hint{margin-top:18px;font-size:14px;color:var(--muted)}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+/* question */
+.qhead{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px}
+.who{font-family:var(--serif);font-size:26px;font-weight:700;color:var(--wine);margin-inline-end:auto}
+.tag{font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:#fffaf0;white-space:nowrap}
+.tag.d1{color:var(--ok);border-color:#b9d8c4}.tag.d2{color:#a8690a;border-color:#ecd29a}.tag.d3{color:var(--bad);border-color:#e9b8b3}
+.tag.iq{color:var(--teal);border-color:#a9cfcc}
+.steps{display:flex;gap:8px;margin-bottom:18px}
+.steps i{flex:1;height:8px;border-radius:8px;background:var(--paper2)}
+.steps i.now{background:var(--gold)}.steps i.ok{background:var(--ok)}.steps i.no{background:var(--bad)}
+.qtext{font-family:var(--serif);font-size:clamp(24px,3.1vw,34px);line-height:1.25;margin:0 0 20px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{display:flex;align-items:center;gap:12px;text-align:start;min-height:76px;padding:14px 16px;border-radius:14px;
+  border:2px solid var(--line);background:#fffdf6;font-size:clamp(17px,1.9vw,21px);font-weight:600;line-height:1.25}
+.opt b{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--paper2);color:var(--wine);font-size:16px}
+.opt:active{border-color:var(--gold)}
+.opt.done{pointer-events:none;opacity:.5}
+.opt.right{opacity:1;border-color:var(--ok);background:#e5f3ea}.opt.right b{background:var(--ok);color:#fff}
+.opt.wrong{opacity:1;border-color:var(--bad);background:#fbe7e5}.opt.wrong b{background:var(--bad);color:#fff}
+.after{margin-top:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.fb{font-size:20px;font-weight:800}.fb.ok{color:var(--ok)}.fb.no{color:var(--bad)}
+.ref{flex-basis:100%;font-size:15px;color:var(--muted);margin-top:-6px}
+.next{margin-inline-start:auto;border:0;border-radius:12px;padding:14px 26px;font-weight:800;font-size:18px;color:#fff7e0;background:var(--wine)}
+.next:active{background:var(--wine2)}
+
+/* summary */
+.score-big{font-family:var(--serif);font-size:84px;line-height:1;color:var(--wine);margin:8px 0}
+.dots{display:flex;justify-content:center;gap:10px;margin:14px 0 24px}
+.dots span{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px}
+.dots .ok{background:var(--ok)}.dots .no{background:var(--bad)}
+
+/* ---------- board (right) ---------- */
+.board{display:flex;flex-direction:column;height:100%;min-height:0;color:#fbf1d8;
+  background:linear-gradient(180deg,var(--wine) 0,var(--wine2) 100%);border-left:4px solid var(--gold)}
+.board h2{font-family:var(--serif);font-size:22px;margin:0;padding:16px 18px 12px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold2);
+  border-bottom:1px solid rgba(233,200,115,.3)}
+.list{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;margin:0;padding:8px 10px;list-style:none}
+.row{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;font-size:18px}
+.row .rk{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:800;background:rgba(255,255,255,.1)}
+.row:nth-child(1) .rk{background:var(--gold2);color:var(--wine2)}
+.row:nth-child(2) .rk{background:#d9d9d9;color:var(--wine2)}
+.row:nth-child(3) .rk{background:#c98b5a;color:var(--wine2)}
+.row .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.row .nm small{display:block;font-weight:400;font-size:12px;opacity:.65}
+.row .pt{font-family:var(--serif);font-size:22px;font-weight:700;color:var(--gold2);font-variant-numeric:tabular-nums}
+.row.active{background:rgba(233,200,115,.18);outline:1px solid rgba(233,200,115,.5)}
+.row.bump .pt{animation:bump .6s}
+@keyframes bump{30%{transform:scale(1.5);color:#fff}}
+.row .del{display:none;border:0;border-radius:8px;background:#fff;color:var(--bad);font-weight:800;width:32px;height:32px}
+.board.edit .row .del{display:block}
+.empty{padding:24px 14px;opacity:.7;text-align:center;font-size:15px}
+.foot{padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid rgba(233,200,115,.3)}
+.stat{font-size:12px;opacity:.75;margin-bottom:8px;text-align:center}
+.btns{display:flex;gap:6px}
+.btns button{flex:1;border:1px solid rgba(233,200,115,.45);background:transparent;color:#fbf1d8;border-radius:9px;padding:9px 4px;font-size:13px;font-weight:600}
+.btns button:active{background:rgba(255,255,255,.12)}
+
+/* sources overlay */
+.ov{position:fixed;inset:0;background:rgba(43,26,20,.6);display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
+.ov.on{display:flex}
+.sheet{background:var(--paper);border-radius:16px;max-width:720px;width:100%;max-height:86vh;overflow:auto;-webkit-overflow-scrolling:touch;padding:24px 26px}
+.sheet h3{font-family:var(--serif);color:var(--wine);margin:0 0 10px;font-size:26px}
+.sheet h4{margin:18px 0 6px;color:var(--wine)}
+.sheet li{margin:4px 0;line-height:1.4}
+.sheet .next{display:block;margin:18px 0 0 auto}
+
+@media (max-width:820px){.opts{grid-template-columns:1fr}.opt{min-height:60px}}
+@media (max-width:560px){body{overflow:auto}.app{grid-template-columns:1fr;height:auto}.board{height:60vh;border-left:0;border-top:4px solid var(--gold)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="stage">
+    <header class="top">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><g fill="none" stroke="#c9982f" stroke-width="3.2" stroke-linecap="round"><path d="M20 6v28M6 20h28"/></g><g fill="#6e1423"><circle cx="20" cy="5" r="3.2"/><circle cx="20" cy="35" r="3.2"/><circle cx="5" cy="20" r="3.2"/><circle cx="35" cy="20" r="3.2"/><circle cx="20" cy="20" r="4.2"/></g></svg>
+      <h1>Festival Trivia</h1><span class="sp"></span><span class="pill" id="pill"></span>
+    </header>
+    <div class="view" id="view"></div>
+  </section>
+
+  <aside class="board" id="board">
+    <h2>Scoreboard</h2>
+    <ol class="list" id="list"></ol>
+    <div class="foot">
+      <div class="stat" id="stat"></div>
+      <div class="btns">
+        <button id="bSrc">Sources</button>
+        <button id="bEdit">Edit</button>
+        <button id="bReset">Reset</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div class="ov" id="ov"><div class="sheet">
+  <h3>Question sources</h3>
+  <p>Every question shows its own reference after it is answered.</p>
+  <h4>Bible</h4>
+  <ul><li>The Holy Bible. Each question lists its book, chapter and verse (verse numbering as in the NKJV).</li></ul>
+  <h4>The Holy Family in Egypt</h4>
+  <ul>
+    <li>Gospel of St. Matthew 2:13-23; Hosea 11:1; Isaiah 19</li>
+    <li>Coptic Orthodox Church (official site): "Holy Family" (copticorthodox.church)</li>
+    <li>Egypt State Information Service: "The Holy Family in its Journey to Egypt" (sis.gov.eg)</li>
+    <li>St. Mark Coptic Orthodox Church, London: "Lord Jesus' entry into Egypt" (stmark.org.uk)</li>
+    <li>St. Mary &amp; St. John Coptic Church: "Feast of Entry of the Lord into Egypt" (smsanj.org)</li>
+    <li>Watani: "Entry of Holy Family into Egypt: a national feast?" (wataninet.com)</li>
+    <li>Memphis Tours "Trail of the Holy Family"; Pilgrimaps "The Holy Family Route today"</li>
+  </ul>
+  <h4>Coptic Church</h4>
+  <ul>
+    <li>Coptic Orthodox Diocese of the Southern US: "On Fasting" (suscopts.org)</li>
+    <li>Coptic Orthodox Diocese of Los Angeles: "The Feasts of the Church" (lacopts.org)</li>
+    <li>St. Mary Coptic Church: "Apostles Fast" fasting timeline (saint-mary.net)</li>
+    <li>St. Demiana Coptic Church: "Fasts &amp; Feasts" (stdemianasa.org)</li>
+    <li>The Coptic Synaxarium (lives of the saints)</li>
+    <li>Wikipedia articles named in the individual references (Pope of the Coptic Orthodox Church, Coptic calendar, Agpeya, and others)</li>
+  </ul>
+  <h4>Brain teasers</h4>
+  <ul><li>Classic number-pattern, logic and riddle types written for this game. Each one shows a short explanation of its answer.</li></ul>
+  <button class="next" id="bClose">Close</button>
+</div></div>
+
+<script>
+/* Question format: [difficulty 1-3, category, question, CORRECT answer, wrong, wrong, wrong, reference]
+   Categories: B = Bible, H = Holy Family in Egypt, C = Coptic Church, I = brain teaser
+   The first answer is always the correct one; the game shuffles the order on screen.
+   IMPORTANT: add new questions at the END of the list so saved games stay in sync. */
+const HF='copticorthodox.church, "Holy Family"';
+const SIS='Egypt State Information Service, "The Holy Family in its Journey to Egypt"';
+const MT='Memphis Tours, "Trail of the Holy Family in Egypt"';
+const ENT='smsanj.org, "Feast of Entry of the Lord into Egypt"';
+const FST='suscopts.org "On Fasting"; saint-mary.net fasting timeline';
+const FEA='lacopts.org, "The Feasts of the Church"';
+const POPE='Wikipedia, "Pope of the Coptic Orthodox Church"';
+const CAL='Wikipedia, "Coptic calendar"';
+const LIT='Coptic liturgical tradition';
+/*QSTART*/
+const Q=[
+/* ===== EASY: Bible ===== */
+[1,'B',"Who built the ark to survive the great flood?","Noah","Moses","Abraham","David","Genesis 6:13-14"],
+[1,'B',"Who was the first man God created?","Adam","Noah","Abel","Seth","Genesis 2:7, 2:20"],
+[1,'B',"Who was the first woman?","Eve","Sarah","Mary","Ruth","Genesis 3:20"],
+[1,'B',"On which day did God rest after creation?","The seventh day","The first day","The third day","The sixth day","Genesis 2:2"],
+[1,'B',"Which prophet was swallowed by a great fish?","Jonah","Elijah","Daniel","Isaiah","Jonah 1:17"],
+[1,'B',"Who defeated the giant Goliath?","David","Saul","Samson","Joshua","1 Samuel 17:49-50"],
+[1,'B',"In which town was Jesus born?","Bethlehem","Nazareth","Jerusalem","Capernaum","Matthew 2:1"],
+[1,'B',"How many apostles did Jesus choose?","12","7","10","40","Matthew 10:1-4"],
+[1,'B',"Which apostle betrayed Jesus?","Judas Iscariot","Peter","Thomas","Andrew","Matthew 26:14-16"],
+[1,'B',"Who was thrown into the lions' den?","Daniel","Joseph","Jeremiah","Jonah","Daniel 6:16"],
+[1,'B',"What is the first book of the Bible?","Genesis","Exodus","Matthew","Psalms","Genesis 1:1"],
+[1,'B',"What is the last book of the Bible?","Revelation","Jude","Acts","Malachi","Revelation 22:21"],
+[1,'B',"Who led the Israelites out of Egypt?","Moses","Joshua","Abraham","Solomon","Exodus 3:10; 12:51"],
+[1,'B',"How many commandments did God write on the tablets for Moses?","Ten","Seven","Twelve","Five","Exodus 34:28"],
+[1,'B',"Which sea did God part for the Israelites?","The Red Sea","The Dead Sea","The Sea of Galilee","The Mediterranean Sea","Exodus 14:21-22; 15:4"],
+[1,'B',"Who baptized Jesus?","John the Baptist","Peter","Paul","Andrew","Matthew 3:13-15"],
+[1,'B',"In which river was Jesus baptized?","The Jordan","The Nile","The Euphrates","The Tigris","Mark 1:9"],
+[1,'B',"At the wedding in Cana, Jesus turned water into what?","Wine","Milk","Oil","Honey","John 2:1-11"],
+[1,'B',"Which son of Jacob received a tunic of many colors?","Joseph","Benjamin","Reuben","Judah","Genesis 37:3"],
+[1,'B',"For how many days and nights did it rain during the flood?","40","7","12","100","Genesis 7:12"],
+[1,'B',"What sign did God give Noah as a promise never to flood the whole earth again?","A rainbow","A dove","A star","A burning bush","Genesis 9:13"],
+[1,'B',"Which apostle denied Jesus three times?","Peter","John","James","Philip","Luke 22:61"],
+[1,'B',"Which angel announced to the Virgin Mary that she would bear Jesus?","Gabriel","Michael","Raphael","Suriel","Luke 1:26-31"],
+[1,'B',"Jesus fed the five thousand with five loaves and how many fish?","Two","Five","Seven","Twelve","John 6:9-11"],
+[1,'B',"Who climbed a sycamore tree to see Jesus?","Zacchaeus","Bartimaeus","Nicodemus","Lazarus","Luke 19:2-4"],
+[1,'B',"In which garden did Adam and Eve live?","Eden","Gethsemane","Babylon","Carmel","Genesis 2:8"],
+[1,'B',"What gifts did the wise men bring to Jesus?","Gold, frankincense and myrrh","Gold, silver and bronze","Bread, wine and oil","Silk, spices and pearls","Matthew 2:11"],
+[1,'B',"Which judge had great strength connected to his uncut hair?","Samson","Gideon","Samuel","Eli","Judges 16:17"],
+[1,'B',"How many Gospels are in the New Testament?","Four","Three","Five","Twelve","Matthew, Mark, Luke and John"],
+[1,'B',"What creature tempted Eve in the garden?","A serpent","A lion","A raven","A wolf","Genesis 3:1"],
+[1,'B',"Who killed his brother Abel?","Cain","Seth","Esau","Ham","Genesis 4:8"],
+[1,'B',"Complete the verse: \"The Lord is my shepherd; I shall not ...\"","Want","Fear","Fall","Sleep","Psalm 23:1 (Psalm 22 in the Agpeya numbering)"],
+[1,'B',"On what animal did Jesus enter Jerusalem?","A donkey","A horse","A camel","A chariot","Matthew 21:5-7"],
+[1,'B',"What tower did people build to try to reach the heavens?","Babel","Siloam","Jericho","Zion","Genesis 11:4-9"],
+[1,'B',"What guided the wise men to the Child Jesus?","A star","A cloud","A dove","A pillar of fire","Matthew 2:2, 2:9"],
+[1,'B',"Which baby was placed in a basket among the reeds of the river?","Moses","Samuel","Isaac","Joseph","Exodus 2:3-10"],
+[1,'B',"Whom did Jesus raise after four days in the tomb?","Lazarus","Jairus","Stephen","Zacchaeus","John 11:39-44"],
+[1,'B',"Who was the brother of Moses and the first high priest?","Aaron","Joshua","Caleb","Hur","Exodus 4:14; 28:1"],
+[1,'B',"For how many years did Israel wander in the wilderness?","40","7","12","70","Numbers 14:33"],
+[1,'B',"What was the trade of Joseph, the guardian of Jesus?","Carpenter","Fisherman","Shepherd","Tax collector","Matthew 13:55"],
+[1,'B',"Who was the twin brother of Jacob?","Esau","Laban","Lot","Ishmael","Genesis 25:25-26"],
+[1,'B',"What food did God send from heaven to feed Israel in the wilderness?","Manna","Figs","Barley bread","Honeycomb","Exodus 16:31"],
+/* ===== EASY: Holy Family ===== */
+[1,'H',"To which country did the Holy Family flee?","Egypt","Syria","Greece","Persia","Matthew 2:13-14"],
+[1,'H',"Who told Joseph in a dream to take the Child and His mother and flee?","An angel of the Lord","The wise men","A shepherd","Simeon the elder","Matthew 2:13"],
+[1,'H',"Which king wanted to destroy the Child Jesus?","Herod","Pharaoh","Caesar Augustus","Nebuchadnezzar","Matthew 2:13, 2:16"],
+[1,'H',"Which Gospel tells the story of the flight into Egypt?","Matthew","Mark","Luke","John","Matthew 2:13-23"],
+[1,'H',"On which river did the Holy Family sail south in Egypt?","The Nile","The Jordan","The Euphrates","The Tigris",HF],
+[1,'H',"When did the Holy Family return from Egypt?","After Herod died","After the Passover","When Jesus turned twelve","When the wise men came back","Matthew 2:19-21"],
+[1,'H',"After returning from Egypt, in which town did the Holy Family live?","Nazareth","Bethlehem","Jericho","Bethany","Matthew 2:23"],
+[1,'H',"Who were the members of the Holy Family?","Jesus, Mary and Joseph","Jesus, Mary and John","Jesus, Peter and Mary","Mary, Elizabeth and Zechariah","Matthew 2:14"],
+/* ===== EASY: Coptic Church ===== */
+[1,'C',"Which apostle and evangelist founded the Church of Alexandria?","St. Mark","St. Peter","St. Paul","St. Thomas",'Wikipedia, "Coptic Orthodox Church"; Synaxarium, 30 Baramouda'],
+[1,'C',"The Coptic Pope is the Pope of which city?","Alexandria","Rome","Antioch","Constantinople",POPE],
+[1,'C',"On what date does the Coptic Church celebrate the Nativity (Christmas)?","January 7","December 25","January 19","January 1",FEA],
+[1,'C',"Who is the current Pope of the Coptic Orthodox Church?","Pope Tawadros II","Pope Shenouda III","Pope Kyrillos VI","Pope Theophilus",POPE],
+[1,'C',"What does \"Kyrie eleison\" mean?","Lord have mercy","Christ is risen","Holy God","Peace be with you",LIT+' (Liturgy of St. Basil)'],
+[1,'C',"Which Egyptian saint is called the \"Father of Monks\"?","St. Anthony the Great","St. Mina","St. George","St. Mark",'Synaxarium, 22 Tobi; Wikipedia, "Anthony the Great"'],
+[1,'C',"Which animal is the symbol of St. Mark?","Lion","Eagle","Ox","Lamb",'Wikipedia, "Mark the Evangelist"'],
+[1,'C',"The word \"Copt\" originally means what?","Egyptian","Greek","Monk","Pilgrim",'Wikipedia, "Copts" (from Greek Aigyptos)'],
+[1,'C',"What is the Coptic book of daily prayers of the hours called?","Agpeya","Synaxarium","Katameros","Psalmody",'Wikipedia, "Agpeya"'],
+[1,'C',"On which two days of the week do Copts fast for most of the year?","Wednesday and Friday","Monday and Thursday","Saturday and Sunday","Tuesday and Friday",FST],
+[1,'C',"How many sacraments does the Coptic Orthodox Church have?","Seven","Two","Three","Twelve",'Wikipedia, "Coptic Orthodox Church"'],
+[1,'C',"Who was the Coptic Pope immediately before Pope Tawadros II?","Pope Shenouda III","Pope Kyrillos VI","Pope Yousab II","Pope Athanasius",POPE],
+[1,'C',"What is the feast of the Coptic New Year called?","Nayrouz","Epiphany","Pentecost","Kiahk",'stdemianasa.org, "Fasts & Feasts"'],
+[1,'C',"What is the holy bread offered in the Divine Liturgy called?","Qurban (Korban)","Manna","Agpeya","Myron",LIT],
+/* ===== EASY: brain teasers ===== */
+[1,'I',"What comes next: 2, 4, 6, 8, ?","10","9","12","16","Add 2 each time."],
+[1,'I',"Which is the odd one out?","Carrot","Apple","Banana","Mango","The others are fruits."],
+[1,'I',"How many months of the year have 28 days?","All 12","1","2","6","Every month has at least 28 days."],
+[1,'I',"What comes next: 5, 10, 15, 20, ?","25","22","30","24","Add 5 each time."],
+[1,'I',"Which weighs more: a kilogram of iron or a kilogram of feathers?","They weigh the same","The iron","The feathers","It depends on the weather","Both are exactly one kilogram."],
+[1,'I',"There are 3 apples and you take away 2. How many do you have?","2","1","3","5","You took 2, so you have 2."],
+[1,'I',"What is the opposite of \"ancient\"?","Modern","Old","Huge","Rare","Ancient means very old."],
+[1,'I',"Hand is to glove as foot is to ...","Sock","Leg","Toe","Hat","A glove covers a hand; a sock covers a foot."],
+[1,'I',"How many sides does a hexagon have?","6","5","7","8","Hexa means six."],
+[1,'I',"How many days are in a leap year?","366","365","364","360","February gets one extra day."],
+[1,'I',"What comes next: 1, 3, 5, 7, ?","9","8","10","11","Odd numbers."],
+[1,'I',"What is half of 50, plus 10?","35","30","60","25","25 + 10 = 35."],
+[1,'I',"Which shape has no corners?","Circle","Square","Triangle","Rectangle","A circle is one smooth curve."],
+[1,'I',"What comes next: A, C, E, G, ?","I","H","J","K","Skip one letter each time."],
+[1,'I',"Bird is to fly as fish is to ...","Swim","Water","Scale","Net","It is how each one moves."],
+[1,'I',"What comes next: Monday, Wednesday, Friday, ?","Sunday","Saturday","Tuesday","Thursday","Skip one day each time."],
+[1,'I',"Which number is the largest?","0.75","0.5","0.25","0.125","0.75 is three quarters."],
+[1,'I',"How many minutes are in two hours?","120","60","100","200","60 x 2."],
+[1,'I',"What is 100 minus 37?","63","73","67","57","100 - 37 = 63."],
+[1,'I',"Which is the odd one out?","Cube","Circle","Square","Triangle","A cube is 3-D; the others are flat."],
+[1,'I',"Sara's father has four daughters: Nana, Nene, Nini and ... ?","Sara","Nono","Nunu","Nina","Sara is his daughter too."],
+[1,'I',"What has hands but cannot clap?","A clock","A tree","A river","A chair","A clock has an hour hand and a minute hand."],
+[1,'I',"Which number is missing: 10, 20, 30, ?, 50","40","35","45","25","Count in tens."],
+[1,'I',"If today is Tuesday, what day is the day after tomorrow?","Thursday","Wednesday","Friday","Monday","Tuesday, Wednesday, Thursday."],
+[1,'I',"Which is the odd one out?","Eagle","Dog","Cat","Cow","The others are mammals."],
+[1,'I',"What is 9 x 6?","54","56","45","63","9 x 6 = 54."],
+[1,'I',"How many legs do 3 cats have altogether?","12","9","6","16","3 x 4."],
+[1,'I',"Hot is to cold as up is to ...","Down","High","Sky","Over","They are opposites."],
+[1,'I',"Rearrange the letters OLIN to make an animal.","Lion","Lamb","Lynx","Mole","O-L-I-N makes LION."],
+[1,'I',"How many eggs are in half a dozen?","6","12","3","10","A dozen is 12."],
+[1,'I',"How many sides do two triangles and one square have altogether?","10","7","9","12","3 + 3 + 4."],
+[1,'I',"What gets wetter the more it dries?","A towel","The sun","A stone","A candle","A towel gets wet as it dries you."],
+[1,'I',"What number is 7 more than 15?","22","21","23","12","15 + 7."],
+[1,'I',"What comes next: Z, Y, X, W, ?","V","U","T","S","The alphabet backwards."],
+[1,'I',"Which word reads the same forwards and backwards?","LEVEL","LEVER","LATER","LEMON","L-E-V-E-L."],
+[1,'I',"What is one quarter of 20?","5","4","10","8","20 / 4."],
+[1,'I',"How many centimeters are in one meter?","100","10","1,000","60","Centi means one hundredth."],
+[1,'I',"If 5 pencils cost 10 pounds, how much does one pencil cost?","2 pounds","5 pounds","1 pound","50 pounds","10 / 5."],
+[1,'I',"What comes next: 1, 2, 4, 8, ?","16","10","12","14","Double each time."],
+[1,'I',"Pen is to write as knife is to ...","Cut","Fork","Sharp","Kitchen","It is what each tool does."],
+[1,'I',"How many cuts do you need to divide a rope into 5 pieces?","4","5","6","3","Each cut adds one piece."],
+[1,'I',"A is taller than B, and B is taller than C. Who is the shortest?","C","A","B","Impossible to tell","A > B > C."],
+
+/* ===== MEDIUM: Bible ===== */
+[2,'B',"Who is the oldest man recorded in the Bible, living 969 years?","Methuselah","Noah","Adam","Enoch","Genesis 5:27"],
+[2,'B',"How many sons did Jacob have?","12","7","10","14","Genesis 35:22"],
+[2,'B',"Who was chosen to replace Judas among the apostles?","Matthias","Barnabas","Silas","Stephen","Acts 1:26"],
+[2,'B',"What was the apostle Paul called before?","Saul","Simon","Silas","Levi","Acts 13:9"],
+[2,'B',"On the road to which city did Saul see a light from heaven?","Damascus","Jericho","Antioch","Emmaus","Acts 9:3"],
+[2,'B',"How many plagues did God send on Egypt?","Ten","Seven","Twelve","Three","Exodus 7-12"],
+[2,'B',"What was the first plague on Egypt?","Water turned to blood","Frogs","Darkness","Locusts","Exodus 7:20"],
+[2,'B',"On which mountain did God give Moses the Ten Commandments?","Mount Sinai","Mount Carmel","Mount Tabor","Mount Ararat","Exodus 19:20; 31:18"],
+[2,'B',"Who led Israel after the death of Moses?","Joshua","Caleb","Aaron","Gideon","Joshua 1:1-2"],
+[2,'B',"The walls of which city fell after Israel marched around it?","Jericho","Ai","Nineveh","Hebron","Joshua 6:20"],
+[2,'B',"Which king built the first temple in Jerusalem?","Solomon","David","Saul","Hezekiah","1 Kings 6:1"],
+[2,'B',"Who was Ruth's mother-in-law?","Naomi","Orpah","Hannah","Deborah","Ruth 1:3-4, 1:16"],
+[2,'B',"Which queen risked her life to save her people from Haman?","Esther","Vashti","Bathsheba","Jezebel","Esther 4:16; 7:3-6"],
+[2,'B',"Which prophet was taken up to heaven by a whirlwind, with a chariot of fire?","Elijah","Elisha","Enoch","Ezekiel","2 Kings 2:11"],
+[2,'B',"How many qualities make up the \"fruit of the Spirit\" in Galatians?","Nine","Seven","Ten","Twelve","Galatians 5:22-23"],
+[2,'B',"What is the shortest verse in the English Bible?","\"Jesus wept.\"","\"Pray without ceasing.\"","\"Rejoice always.\"","\"God is love.\"","John 11:35"],
+[2,'B',"In which town did Jesus perform His first miracle?","Cana of Galilee","Capernaum","Bethany","Nazareth","John 2:11"],
+[2,'B',"For how many days did Jesus fast in the wilderness?","40","3","7","21","Matthew 4:2"],
+[2,'B',"Who was compelled to carry the cross of Jesus?","Simon of Cyrene","Joseph of Arimathea","Simon Peter","Nicodemus","Mark 15:21"],
+[2,'B',"What was the place of the crucifixion called?","Golgotha","Gethsemane","Bethesda","Gabbatha","John 19:17"],
+[2,'B',"Who asked Pilate for the body of Jesus?","Joseph of Arimathea","Simon of Cyrene","John the Beloved","Lazarus","Matthew 27:57-58"],
+[2,'B',"Which apostle would not believe until he saw the marks of the nails?","Thomas","Philip","Bartholomew","Thaddaeus","John 20:24-28"],
+[2,'B',"Which apostle had been a tax collector?","Matthew","Andrew","James","Thomas","Matthew 9:9"],
+[2,'B',"Which Gospel writer does St. Paul call \"the beloved physician\"?","Luke","Mark","Matthew","John","Colossians 4:14"],
+[2,'B',"Who was the first Christian martyr?","Stephen","James","Philip","Barnabas","Acts 7:59-60"],
+[2,'B',"On which feast did the Holy Spirit descend on the apostles?","Pentecost","Passover","Tabernacles","Purim","Acts 2:1-4"],
+[2,'B',"On which island did St. John receive the Revelation?","Patmos","Malta","Cyprus","Crete","Revelation 1:9"],
+[2,'B',"What new name did God give Jacob?","Israel","Abraham","Judah","Joshua","Genesis 32:28"],
+[2,'B',"For how many pieces of silver did Judas betray Jesus?","30","20","40","100","Matthew 26:15"],
+[2,'B',"Who interpreted Pharaoh's dreams of the cows and the grain?","Joseph","Daniel","Moses","Aaron","Genesis 41:15-27"],
+[2,'B',"Who was the mother of the prophet Samuel?","Hannah","Naomi","Rachel","Elizabeth","1 Samuel 1:20"],
+[2,'B',"Who was David's close friend, the son of King Saul?","Jonathan","Absalom","Abner","Joab","1 Samuel 18:1"],
+[2,'B',"Who baptized the Ethiopian eunuch?","Philip","Peter","Paul","Barnabas","Acts 8:38"],
+[2,'B',"In the parable, who stopped to help the wounded man on the road to Jericho?","A Samaritan","A priest","A Levite","A Pharisee","Luke 10:33"],
+[2,'B',"Jesus healed ten lepers. How many returned to thank Him?","One","Two","Five","Nine","Luke 17:15-17"],
+[2,'B',"Who was the sister of Moses?","Miriam","Zipporah","Deborah","Leah","Exodus 15:20"],
+[2,'B',"Who was the first king of Israel?","Saul","David","Solomon","Samuel","1 Samuel 10:1, 10:24"],
+[2,'B',"Who was the mother of John the Baptist?","Elizabeth","Anna","Martha","Salome","Luke 1:57-60"],
+[2,'B',"Which apostle was the brother of Simon Peter?","Andrew","James","John","Philip","Matthew 4:18"],
+[2,'B',"Who appeared with Jesus at the Transfiguration?","Moses and Elijah","Abraham and Isaac","David and Solomon","Elijah and Elisha","Matthew 17:3"],
+[2,'B',"Which prisoner did the crowd ask Pilate to release instead of Jesus?","Barabbas","Malchus","Caiaphas","Cleopas","Matthew 27:21-26"],
+[2,'B',"Which Pharisee came to Jesus by night?","Nicodemus","Gamaliel","Caiaphas","Zacchaeus","John 3:1-2"],
+[2,'B',"Which woman hid the Israelite spies in Jericho?","Rahab","Ruth","Deborah","Delilah","Joshua 2:1-4"],
+[2,'B',"Which prophet said, \"Behold, the virgin shall conceive and bear a Son\"?","Isaiah","Jeremiah","Micah","Malachi","Isaiah 7:14"],
+[2,'B',"Which birds brought food to the prophet Elijah?","Ravens","Doves","Eagles","Sparrows","1 Kings 17:6"],
+[2,'B',"Jesus descended from which tribe of Israel?","Judah","Levi","Benjamin","Dan","Hebrews 7:14"],
+[2,'B',"Who was the father of King David?","Jesse","Boaz","Obed","Saul","1 Samuel 16:1"],
+[2,'B',"Whose donkey spoke to him?","Balaam","Balak","Samson","Absalom","Numbers 22:28"],
+[2,'B',"Who was the father of John the Baptist?","Zechariah","Simeon","Eli","Joachim","Luke 1:13"],
+/* ===== MEDIUM: Holy Family ===== */
+[2,'H',"Which prophet wrote, \"Out of Egypt I called My son\"?","Hosea","Isaiah","Jeremiah","Micah","Hosea 11:1; Matthew 2:15"],
+[2,'H',"On which date does the Coptic Church celebrate the Entry of the Lord into Egypt?","June 1 (24 Bashans)","January 7 (29 Kiahk)","January 19 (11 Tobi)","September 11 (1 Thout)",ENT],
+[2,'H',"In which Cairo district is the famous \"Tree of the Virgin Mary\"?","Matariya","Zamalek","Shubra","Helwan",SIS],
+[2,'H',"Which Old Cairo church stands over a cave where the Holy Family is believed to have stayed?","Abu Serga (Sts. Sergius and Bacchus)","The Hanging Church","St. Mark's Cathedral in Abbassia","St. Simon the Tanner's church",MT],
+[2,'H',"At which monastery in Assiut did the Holy Family stay the longest?","Al-Muharraq Monastery","St. Anthony's Monastery","St. Bishoy's Monastery","St. Mina's Monastery",HF],
+[2,'H',"According to Coptic tradition, about how long did the Holy Family stay in Egypt?","More than three years","About forty days","About three months","About twelve years",'Watani, "Entry of Holy Family into Egypt"; stmark.org.uk'],
+[2,'H',"Through which region did the Holy Family enter Egypt?","Northern Sinai","The Western Desert","Nubia in the south","The port of Alexandria",SIS],
+[2,'H',"Which valley, famous today for its monasteries, did the Holy Family pass through?","Wadi El Natrun","Wadi El Rayan","The Valley of the Kings","Wadi Rum",MT],
+[2,'H',"Which prophet foretold that the Lord would come into Egypt \"riding on a swift cloud\"?","Isaiah","Ezekiel","Daniel","Jonah","Isaiah 19:1"],
+[2,'H',"According to Coptic tradition, who accompanied the Holy Family on the journey?","Salome","Elizabeth","Mary Magdalene","Anna the prophetess",'stmark.org.uk, "Lord Jesus\' entry into Egypt"'],
+/* ===== MEDIUM: Coptic Church ===== */
+[2,'C',"Pope Tawadros II is which number in the line of Popes of Alexandria?","118th","100th","117th","120th",POPE],
+[2,'C',"The Coptic calendar (Era of the Martyrs) counts its years from which year?","284 AD","33 AD","325 AD","451 AD",CAL],
+[2,'C',"How many months are in the Coptic year?","13","12","10","14",CAL],
+[2,'C',"What is the first month of the Coptic year?","Thout","Kiahk","Tobi","Mesra",CAL],
+[2,'C',"How many days is the Great Lent in the Coptic Church?","55","40","43","50",FST],
+[2,'C',"Which Divine Liturgy is used most often in the Coptic Church?","St. Basil","St. Gregory","St. Cyril","St. James",LIT],
+[2,'C',"Which Pope of Alexandria defended the faith against Arius?","St. Athanasius","St. Dioscorus","St. Theophilus","St. Demetrius",'Wikipedia, "Athanasius of Alexandria"'],
+[2,'C',"Which Egyptian saint founded communal (cenobitic) monastic life?","St. Pachomius","St. Paul the Hermit","St. Macarius","St. Bishoy",'Wikipedia, "Pachomius the Great"'],
+[2,'C',"Which Coptic month before the Nativity is known for its praises to the Virgin Mary?","Kiahk","Thout","Baramhat","Paona",LIT+' (Kiahk praises)'],
+[2,'C',"In which Cairo district did the apparitions of the Virgin Mary begin in 1968?","Zeitoun","Maadi","Shubra","Old Cairo",'Wikipedia, "Our Lady of Zeitoun"'],
+[2,'C',"Which two instruments accompany Coptic hymns?","Cymbals and triangle","Organ and harp","Drum and flute","Violin and oud",LIT],
+[2,'C',"How many days is the Fast of Jonah (Nineveh)?","3","7","15","40",FST],
+[2,'C',"How many days is the Fast of the Virgin Mary (August 7 to 21)?","15","3","43","55",'saint-mary.net fasting timeline'],
+[2,'C',"Which book of saints' lives is read in the Coptic Liturgy?","Synaxarium","Agpeya","Psalmody","Euchologion",'Wikipedia, "Synaxarium"'],
+[2,'C',"What is the icon screen in front of the sanctuary called?","Iconostasis","Ambon","Narthex","Baptistery",'Wikipedia, "Iconostasis"'],
+[2,'C',"Which saint is connected with the miracle of moving the Mokattam mountain?","St. Simon the Tanner","St. Mina","St. Moses the Black","St. Bishoy",'Wikipedia, "Simon the Tanner"'],
+[2,'C',"When Copts say \"Ekhristos anesti,\" what is the reply?","Alithos anesti","Kyrie eleison","Agios o Theos","Doxa Patri",LIT+' (Paschal greeting)'],
+[2,'C',"How many days is the Nativity (Advent) Fast in the Coptic Church?","43","40","55","15",FST],
+[2,'C',"On what date is the Coptic feast of Epiphany (Theophany)?","January 19","January 7","June 1","September 11",FEA],
+[2,'C',"How many prayers (hours) does the Agpeya contain?","Seven","Three","Five","Twelve",'Wikipedia, "Agpeya"'],
+/* ===== MEDIUM: brain teasers ===== */
+[2,'I',"What comes next: 2, 6, 12, 20, 30, ?","42","40","36","44","The gaps grow: 4, 6, 8, 10, 12."],
+[2,'I',"What comes next: 1, 1, 2, 3, 5, 8, ?","13","11","12","16","Add the two numbers before."],
+[2,'I',"What comes next: 1, 4, 9, 16, ?","25","20","24","36","Square numbers: 5 x 5."],
+[2,'I',"A bat and a ball cost $1.10 together. The bat costs $1.00 more than the ball. How much is the ball?","5 cents","10 cents","1 cent","15 cents","Ball 5 cents + bat $1.05 = $1.10."],
+[2,'I',"A farmer has 17 sheep. All but 9 run away. How many are left?","9","8","17","0","\"All but 9\" means 9 stayed."],
+[2,'I',"All Bloops are Razzies and all Razzies are Lazzies. So \"all Bloops are Lazzies\" is ...","Definitely true","Definitely false","Impossible to know","True only sometimes","If A is inside B and B inside C, A is inside C."],
+[2,'I',"What comes next: 3, 6, 12, 24, ?","48","36","30","46","Double each time."],
+[2,'I',"Which number is the odd one out?","9","3","5","11","The others are prime numbers."],
+[2,'I',"How many months have 31 days?","7","6","5","8","Jan, Mar, May, Jul, Aug, Oct, Dec."],
+[2,'I',"Divide 30 by one half, then add 10. What do you get?","70","25","40","55","30 divided by 1/2 is 60."],
+[2,'I',"You take the first of 3 pills now, then one every half hour. How long until the last pill?","1 hour","1.5 hours","30 minutes","2 hours","Now, +30 minutes, +60 minutes."],
+[2,'I',"In a race you overtake the runner in second place. What place are you in now?","Second","First","Third","Last","You take that runner's place."],
+[2,'I',"What comes next: 81, 27, 9, 3, ?","1","0","2","6","Divide by 3 each time."],
+[2,'I',"What comes next: 4, 9, 16, 25, 36, ?","49","42","45","64","7 x 7."],
+[2,'I',"A brick weighs 1 kg plus half a brick. How much does the brick weigh?","2 kg","1.5 kg","1 kg","3 kg","Half a brick is 1 kg, so the whole is 2 kg."],
+[2,'I',"What is 15% of 200?","30","15","20","35","10% is 20 and 5% is 10."],
+[2,'I',"The perimeter of a square is 36 cm. What is its area?","81 cm\u00B2","36 cm\u00B2","72 cm\u00B2","144 cm\u00B2","Each side is 9 cm; 9 x 9 = 81."],
+[2,'I',"Which number is both a perfect square and a perfect cube?","64","16","27","100","8 x 8 and 4 x 4 x 4."],
+[2,'I',"Which word can be made from the letters of TABLE?","BLEAT","BLAST","BLOAT","BELTS","B-L-E-A-T uses the same five letters."],
+[2,'I',"Book is to reading as fork is to ...","Eating","Kitchen","Metal","Spoon","It is what each one is used for."],
+[2,'I',"3 painters paint 3 walls in 3 hours. How long does 1 painter take to paint 1 wall?","3 hours","1 hour","9 hours","30 minutes","Each painter paints one wall in 3 hours."],
+[2,'I',"What comes next: J, F, M, A, M, J, ?","J","A","S","D","First letters of the months: July."],
+[2,'I',"A train leaves at 9:40 and arrives at 12:15. How long is the trip?","2 h 35 min","2 h 25 min","3 h 35 min","2 h 55 min","9:40 to 12:00 is 2 h 20, plus 15 minutes."],
+[2,'I',"What is the average of 10, 20, 30 and 40?","25","20","30","100","100 divided by 4."],
+[2,'I',"A rooster lays an egg on the very top of a roof. Which way does the egg roll?","It doesn't: roosters don't lay eggs","To the left","To the right","Down the front","Only hens lay eggs."],
+[2,'I',"If yesterday was Friday, what day is the day after tomorrow?","Monday","Sunday","Tuesday","Saturday","Today is Saturday."],
+[2,'I',"What comes next: 7, 14, 28, 56, ?","112","84","96","102","Double each time."],
+[2,'I',"What comes next: 100, 95, 85, 70, ?","50","55","60","45","Subtract 5, 10, 15, then 20."],
+[2,'I',"Which is the odd one out?","Moon","Mercury","Venus","Mars","The others are planets."],
+[2,'I',"The more of them you take, the more you leave behind. What are they?","Footsteps","Coins","Breaths","Books","Every step you take stays behind you."],
+[2,'I',"How many legs do 4 chickens and 3 cows have altogether?","20","14","28","22","8 + 12."],
+[2,'I',"If A=1, B=2, C=3 and so on, what is D + O + G?","26","24","27","30","4 + 15 + 7."],
+[2,'I',"What is 2 + 2 x 5?","12","20","14","9","Multiply first: 2 + 10."],
+[2,'I',"What comes next: 2, 3, 5, 7, 11, 13, ?","17","15","16","19","Prime numbers."],
+[2,'I',"How many edges does a cube have?","12","6","8","10","4 on top, 4 on the bottom, 4 upright."],
+[2,'I',"What comes next: AZ, BY, CX, ?","DW","DV","EW","DX","First letter goes forward, second goes backward."],
+[2,'I',"What comes next: 8, 6, 9, 7, 10, 8, ?","11","9","6","12","Minus 2, plus 3, repeating."],
+[2,'I',"2 pencils weigh the same as 1 eraser, and 3 erasers the same as 1 ruler. How many pencils balance 2 rulers?","12","6","10","5","1 ruler = 3 erasers = 6 pencils."],
+[2,'I',"Which number multiplied by itself gives 169?","13","12","14","19","13 x 13 = 169."],
+[2,'I',"How many degrees does the minute hand of a clock turn in 20 minutes?","120\u00B0","60\u00B0","90\u00B0","20\u00B0","A third of a full 360\u00B0 turn."],
+[2,'I',"If the day before yesterday was Thursday, what day is tomorrow?","Sunday","Saturday","Monday","Friday","Today is Saturday."],
+[2,'I',"A number is doubled, then 6 is added, and the result is 30. What is the number?","12","18","15","10","(30 - 6) / 2."],
+[2,'I',"Each cut takes 3 minutes. How long does it take to cut a log into 6 pieces?","15 minutes","18 minutes","12 minutes","21 minutes","6 pieces need only 5 cuts."],
+[2,'I',"4 workers build a wall in 6 days. How long do 8 workers take at the same pace?","3 days","12 days","4 days","2 days","Twice the workers, half the time."],
+[2,'I',"A car drives at 60 km/h for 2.5 hours. How far does it go?","150 km","120 km","125 km","180 km","60 x 2.5."],
+[2,'I',"You flip two fair coins. What is the chance that both land heads?","1 in 4","1 in 2","1 in 3","1 in 8","HH, HT, TH, TT: one of four."],
+[2,'I',"What is 15 x 15?","225","215","255","205","15 x 15 = 225."],
+
+/* ===== HARD: Bible ===== */
+[3,'B',"Which king saw a hand writing on the wall during a feast?","Belshazzar","Nebuchadnezzar","Darius","Cyrus","Daniel 5:1-5"],
+[3,'B',"Who was the father of Methuselah, who \"walked with God\"?","Enoch","Lamech","Jared","Seth","Genesis 5:21-24"],
+[3,'B',"Which king of Salem and priest of God Most High blessed Abram?","Melchizedek","Abimelech","Jethro","Adonizedek","Genesis 14:18-19"],
+[3,'B',"Which judge of Israel was left-handed?","Ehud","Othniel","Jephthah","Shamgar","Judges 3:15"],
+[3,'B',"Which woman was both a prophetess and a judge of Israel?","Deborah","Jael","Huldah","Miriam","Judges 4:4"],
+[3,'B',"With how many men did Gideon defeat the Midianites?","300","1,000","3,000","10,000","Judges 7:7"],
+[3,'B',"How many years did God add to King Hezekiah's life?","15","7","10","40","2 Kings 20:6"],
+[3,'B',"Which prophet confronted David after his sin with Bathsheba?","Nathan","Samuel","Gad","Elijah","2 Samuel 12:1-7"],
+[3,'B',"Which Syrian commander was healed of leprosy by washing in the Jordan?","Naaman","Gehazi","Ben-Hadad","Hazael","2 Kings 5:1, 5:14"],
+[3,'B',"On which mountain did Elijah challenge the prophets of Baal?","Mount Carmel","Mount Sinai","Mount Hermon","Mount Nebo","1 Kings 18:19-20"],
+[3,'B',"On which island was St. Paul shipwrecked?","Malta","Patmos","Cyprus","Crete","Acts 28:1"],
+[3,'B',"Which young man fell asleep and fell from a window while Paul preached?","Eutychus","Tychicus","Timothy","Onesimus","Acts 20:9"],
+[3,'B',"Who was St. Paul's teacher in the Law?","Gamaliel","Caiaphas","Nicodemus","Annas","Acts 22:3"],
+[3,'B',"Which of these is NOT one of the seven churches in Revelation?","Corinth","Smyrna","Sardis","Thyatira","Revelation 1:11"],
+[3,'B',"Which church in Revelation was called \"lukewarm\"?","Laodicea","Ephesus","Philadelphia","Pergamos","Revelation 3:14-16"],
+[3,'B',"Which seller of purple from Thyatira was baptized with her household?","Lydia","Priscilla","Phoebe","Dorcas","Acts 16:14-15"],
+[3,'B',"In which city were the disciples first called Christians?","Antioch","Jerusalem","Alexandria","Ephesus","Acts 11:26"],
+[3,'B',"Which runaway servant did Paul send back to Philemon?","Onesimus","Epaphras","Tychicus","Archippus","Philemon 1:10-12"],
+[3,'B',"How old was Jesus when He stayed behind in the temple among the teachers?","12","7","10","30","Luke 2:42-46"],
+[3,'B',"Which righteous man took the infant Jesus in his arms in the temple and blessed God?","Simeon","Zechariah","Nicodemus","Gamaliel","Luke 2:25-28"],
+[3,'B',"What was the name of the high priest's servant whose ear Peter cut off?","Malchus","Barabbas","Cleopas","Rufus","John 18:10"],
+[3,'B',"At which pool did Jesus heal a man who had been sick for 38 years?","Bethesda","Siloam","Gihon","Gibeon","John 5:2-9"],
+[3,'B',"How many large fish were in the net after the Resurrection, in John 21?","153","72","120","276","John 21:11"],
+[3,'B',"How many years did Jacob serve Laban for his two daughters?","14","7","10","21","Genesis 31:41"],
+[3,'B',"For how many pieces of silver was Joseph sold by his brothers?","20","30","12","50","Genesis 37:28"],
+[3,'B',"Who was the wife of Moses?","Zipporah","Miriam","Jochebed","Keturah","Exodus 2:21"],
+[3,'B',"How old was Moses when he died?","120","80","100","175","Deuteronomy 34:7"],
+[3,'B',"From which mountain did Moses see the Promised Land before he died?","Mount Nebo","Mount Sinai","Mount Carmel","Mount Zion","Deuteronomy 34:1"],
+[3,'B',"Which two spies gave a faithful report about the Promised Land?","Joshua and Caleb","Moses and Aaron","Eldad and Medad","Nadab and Abihu","Numbers 14:6-9"],
+[3,'B',"To which land was Abraham told to take Isaac for an offering?","Moriah","Goshen","Midian","Haran","Genesis 22:2"],
+[3,'B',"Which son of Solomon became king after him?","Rehoboam","Jeroboam","Absalom","Adonijah","1 Kings 11:43"],
+[3,'B',"Which Persian king first proclaimed that the Jews could return and rebuild the temple?","Cyrus","Xerxes","Artaxerxes","Nebuchadnezzar","Ezra 1:1-3"],
+[3,'B',"Which prophet was told to marry Gomer?","Hosea","Amos","Joel","Micah","Hosea 1:2-3"],
+[3,'B',"Which prophet saw the valley of dry bones?","Ezekiel","Jeremiah","Zechariah","Daniel","Ezekiel 37:1-10"],
+[3,'B',"Which prophet foretold that the Ruler would come from Bethlehem?","Micah","Amos","Habakkuk","Nahum","Micah 5:2"],
+[3,'B',"How old was Noah when the flood came?","600","100","500","950","Genesis 7:6"],
+[3,'B',"Who was sent out with Paul on his first missionary journey?","Barnabas","Silas","Timothy","Apollos","Acts 13:2-4"],
+[3,'B',"Which couple lied about the price of their land and fell dead?","Ananias and Sapphira","Aquila and Priscilla","Zechariah and Elizabeth","Boaz and Ruth","Acts 5:1-10"],
+[3,'B',"The title on the cross was written in Hebrew, Greek and which other language?","Latin","Aramaic","Coptic","Persian","John 19:20"],
+[3,'B',"St. Paul belonged to which tribe of Israel?","Benjamin","Judah","Levi","Ephraim","Philippians 3:5"],
+[3,'B',"What did Aaron's rod produce when it budded?","Almonds","Figs","Olives","Grapes","Numbers 17:8"],
+[3,'B',"Which centurion in Caesarea was told in a vision to send for Peter?","Cornelius","Julius","Claudius Lysias","Publius","Acts 10:1-5"],
+[3,'B',"Which apostles did Jesus name \"Sons of Thunder\"?","James and John","Peter and Andrew","Philip and Bartholomew","Simon and Jude","Mark 3:17"],
+[3,'B',"From which city did Abram's family first set out?","Ur of the Chaldeans","Nineveh","Babylon","Damascus","Genesis 11:31"],
+[3,'B',"Who was Moses' father-in-law, the priest of Midian?","Jethro","Laban","Eli","Balak","Exodus 3:1"],
+[3,'B',"Which king of Babylon destroyed Jerusalem and its temple?","Nebuchadnezzar","Belshazzar","Sennacherib","Cyrus","2 Kings 25:1-9"],
+[3,'B',"Who led the rebuilding of the walls of Jerusalem?","Nehemiah","Ezra","Zerubbabel","Haggai","Nehemiah 2:17-18"],
+/* ===== HARD: Holy Family ===== */
+[3,'H',"How long did the Holy Family stay at the site of Al-Muharraq Monastery?","Six months and ten days","Forty days","Three years","One week",HF],
+[3,'H',"Which mountain near Assiut is traditionally the last, southernmost stop of the Holy Family?","Mount Dronka","Mount Sinai","Mount Mokattam","Mount Tabor",'Egypt Holy Family Trail (Al-Muharraq and Dronka); '+HF],
+[3,'H',"On which mountain near Samalut does a church of the Virgin overlook the Nile where the Holy Family rested?","Gabal al-Tayr","Mount Qusqam","Mount Dronka","Mount Mokattam",'Pilgrimaps, "The Holy Family Route today"'],
+[3,'H',"In which Delta town is a rock kept that is said to bear the footprint of the Child Jesus?","Sakha","Tanta","Damietta","Rosetta",MT],
+[3,'H',"Al-Muharraq Monastery is often called by which name?","The Second Bethlehem","The New Jerusalem","The Second Nazareth","The Gate of Heaven",SIS],
+[3,'H',"The traditional account of the Holy Family's route comes from a vision of which Pope of Alexandria?","Pope Theophilus (23rd)","Pope Athanasius (20th)","Pope Cyril I (24th)","Pope Demetrius (12th)",SIS],
+[3,'H',"Which ancient city near Zagazig was an early stop of the Holy Family?","Tel Basta","Luxor","Memphis","Abydos",MT],
+[3,'H',"From which Cairo suburb did the Holy Family sail south on the Nile?","Maadi","Giza","Helwan","Imbaba",MT],
+[3,'H',"Which verse is linked to the altar at Al-Muharraq: \"an altar to the Lord in the midst of the land of Egypt\"?","Isaiah 19:19","Hosea 11:1","Micah 5:2","Jeremiah 31:15",ENT],
+[3,'H',"Why did Joseph avoid Judea and settle in Galilee on the return?","Archelaus was ruling Judea","There was a famine in Judea","The temple had been destroyed","The roads were closed","Matthew 2:22"],
+[3,'H',"Through which ancient city, also called Pelusium, did the Holy Family enter Egypt?","Al-Farma","Tanis","Thebes","Memphis",SIS],
+[3,'H',"Which chapter of Isaiah says, \"Blessed is Egypt My people\"?","Isaiah 19","Isaiah 7","Isaiah 53","Isaiah 40","Isaiah 19:25"],
+/* ===== HARD: Coptic Church ===== */
+[3,'C',"Who was the first person St. Mark converted in Alexandria, later the 2nd Patriarch?","Anianus the shoemaker","Pantaenus the teacher","Demetrius the vinedresser","Simon the tanner",'Wikipedia, "Anianus of Alexandria"'],
+[3,'C',"At the Council of Ephesus (431), St. Cyril defended which title of the Virgin Mary?","Theotokos (Mother of God)","Christotokos","Queen of Heaven","Ever-Virgin",'Wikipedia, "Cyril of Alexandria"'],
+[3,'C',"The Bohairic Coptic alphabet uses Greek letters plus how many letters from Demotic Egyptian?","7","3","10","12",'Wikipedia, "Coptic alphabet"'],
+[3,'C',"During the time of which Pope did the miracle of the Mokattam mountain take place?","Pope Abraham ibn Zaraa (62nd)","Pope Kyrillos IV (110th)","Pope Peter I (17th)","Pope Benjamin I (38th)",'Wikipedia, "Simon the Tanner"'],
+[3,'C',"How many small crosses surround the central square on the Qurban (holy bread)?","12","7","4","24",LIT],
+[3,'C',"St. Athanasius the Apostolic was which number among the Popes of Alexandria?","20th","1st","24th","50th",'Wikipedia, "Athanasius of Alexandria"'],
+[3,'C',"What is the short 13th month of the Coptic year called?","Nasie (the Little Month)","Mesra","Epip","Amshir",CAL],
+[3,'C',"In what year were relics of St. Mark returned from Italy to Egypt?","1968","1952","1900","2000",'Wikipedia, "Saint Mark\'s Coptic Orthodox Cathedral"'],
+[3,'C',"Which teacher of Clement led the Catechetical School of Alexandria around 180 AD?","Pantaenus","Origen","Didymus the Blind","Arius",'Wikipedia, "Catechetical School of Alexandria"'],
+[3,'C',"Which council of 451 AD did the Coptic Church not accept?","Chalcedon","Nicaea","Constantinople","Ephesus",'Wikipedia, "Council of Chalcedon"'],
+[3,'C',"St. Athanasius wrote the famous biography of which saint?","St. Anthony the Great","St. Mark","St. Pachomius","St. Macarius",'Wikipedia, "Athanasius of Alexandria"'],
+[3,'C',"How many ancient monasteries are still inhabited in Wadi El Natrun?","Four","Two","Seven","Twelve",'Wikipedia, "Wadi El Natrun"'],
+[3,'C',"Which Egyptian saint commanded the Theban Legion?","St. Maurice","St. George","St. Mina","St. Mercurius",'Wikipedia, "Theban Legion"'],
+[3,'C',"Pope Kyrillos VI was which number among the Popes of Alexandria?","116th","115th","117th","118th",POPE],
+[3,'C',"What is the ancient name of the monastic desert of Wadi El Natrun?","Scetis (Shiheet)","Thebaid","Goshen","Pentapolis",'Wikipedia, "Wadi El Natrun"'],
+[3,'C',"With how many virgins was St. Demiana martyred?","40","7","12","100","Coptic Synaxarium, 13 Tobi"],
+[3,'C',"Which of these is one of the seven MINOR feasts of the Lord?","The Transfiguration","The Nativity","The Resurrection","Pentecost",FEA],
+[3,'C',"In which year, by tradition, was St. Mark martyred in Alexandria?","68 AD","33 AD","150 AD","284 AD",'Synaxarium, 30 Baramouda; Wikipedia, "Mark the Evangelist"'],
+[3,'C',"How many holes are pierced in the Qurban, recalling the wounds of Christ?","5","3","7","12",LIT],
+[3,'C',"Who was Pope of Alexandria at the Council of Chalcedon, honored by Copts as a confessor?","St. Dioscorus","St. Cyril","St. Timothy","St. Peter the Seal of Martyrs",'Wikipedia, "Council of Chalcedon"'],
+/* ===== HARD: brain teasers ===== */
+[3,'I',"5 machines make 5 toys in 5 minutes. How long do 100 machines take to make 100 toys?","5 minutes","100 minutes","20 minutes","1 minute","Each machine makes one toy in 5 minutes."],
+[3,'I',"What is the angle between the hands of a clock at 3:15?","7.5\u00B0","0\u00B0","15\u00B0","30\u00B0","The hour hand has moved a quarter of the way to 4."],
+[3,'I',"How many times does the digit 9 appear when you write the numbers 1 to 100?","20","10","11","19","10 times as a last digit, 10 times as a first digit."],
+[3,'I',"What comes next: O, T, T, F, F, S, S, ?","E","N","T","O","One, Two, Three ... Eight."],
+[3,'I',"How many squares of all sizes are in a 3 x 3 grid?","14","9","10","13","9 small + 4 medium + 1 large."],
+[3,'I',"A girl has as many brothers as sisters, but each brother has only half as many brothers as sisters. How many children are there?","7 (4 girls, 3 boys)","5 (3 girls, 2 boys)","6 (3 girls, 3 boys)","9 (5 girls, 4 boys)","A girl sees 3 and 3; a boy sees 2 brothers and 4 sisters."],
+[3,'I',"A father is 40 and his son is 10. In how many years will the father be twice as old as his son?","20","10","15","30","Then they will be 60 and 30."],
+[3,'I',"What comes next: 1, 11, 21, 1211, 111221, ?","312211","122221","211211","1112221","Each term describes the one before: three 1s, two 2s, one 1."],
+[3,'I',"What is the sum of all whole numbers from 1 to 100?","5,050","5,000","10,100","4,950","50 pairs that each add up to 101."],
+[3,'I',"A snail in a 10 m well climbs 3 m each day and slips 2 m each night. On which day does it get out?","Day 8","Day 10","Day 7","Day 9","After 7 nights it is at 7 m; on day 8 it climbs to 10 m."],
+[3,'I',"How many times do the hands of a clock overlap in 12 hours?","11","12","10","24","They meet about every 65 minutes."],
+[3,'I',"One of 9 identical-looking balls is heavier. With a balance scale, what is the fewest weighings that always finds it?","2","3","4","1","Weigh 3 against 3, then 1 against 1."],
+[3,'I',"A dark drawer holds 10 black and 10 white socks. How many must you pull out to be sure of a matching pair?","3","2","11","10","With only two colors, the third sock must match one."],
+[3,'I',"6 cats catch 6 mice in 6 minutes. How many cats are needed to catch 100 mice in 100 minutes?","6","100","60","16","6 cats catch one mouse per minute."],
+[3,'I',"What comes next: 1, 8, 27, 64, ?","125","100","81","216","Cube numbers: 5 x 5 x 5."],
+[3,'I',"What comes next: 3, 4, 7, 11, 18, 29, ?","47","40","45","58","Add the two numbers before."],
+[3,'I',"What comes next: 2, 5, 10, 17, 26, ?","37","35","36","39","Square numbers plus 1: 36 + 1."],
+[3,'I',"5 people each shake hands once with every other person. How many handshakes?","10","20","25","15","4 + 3 + 2 + 1."],
+[3,'I',"A man points to a portrait: \"Brothers and sisters I have none, but that man's father is my father's son.\" Who is in the portrait?","His son","Himself","His father","His uncle","\"My father's son\" is the speaker himself."],
+[3,'I',"January 1 is a Monday. What day of the week is January 31?","Wednesday","Tuesday","Thursday","Monday","January 29 is a Monday, so the 31st is Wednesday."],
+[3,'I',"A price of 100 rises by 10%, then falls by 10%. What is the final price?","99","100","101","90","110 minus 11."],
+[3,'I',"What comes next: 6, 11, 21, 36, 56, ?","81","76","86","71","Add 5, 10, 15, 20, then 25."],
+[3,'I',"If A=1, B=2 ... Z=26, what do the letters of FAITH add up to?","44","40","48","52","6 + 1 + 9 + 20 + 8."],
+[3,'I',"Three consecutive numbers add up to 72. What is the largest?","25","24","26","23","23 + 24 + 25."],
+[3,'I',"A 1 km long train travels at 60 km/h through a 1 km tunnel. How long from entering until it is completely out?","2 minutes","1 minute","90 seconds","3 minutes","It must travel 2 km at 1 km per minute."],
+[3,'I',"One and a half hens lay one and a half eggs in one and a half days. How many eggs do 3 hens lay in 3 days?","6","3","9","4.5","Twice the hens and twice the time: 1.5 x 4."],
+[3,'I',"What comes next: 1, 2, 6, 24, 120, ?","720","240","600","360","Multiply by 2, 3, 4, 5, then 6."],
+[3,'I',"What do the inside angles of a pentagon add up to?","540\u00B0","360\u00B0","450\u00B0","720\u00B0","Three triangles: 3 x 180\u00B0."],
+[3,'I',"Two fathers and two sons go fishing. Each catches one fish, yet there are only 3 fish. How?","They are a grandfather, father and son","One fish escaped","Two of them shared a fish","One of them did not fish","The father is both a father and a son."],
+[3,'I',"What is 25% of 25% of 400?","25","100","50","6.25","25% of 400 is 100; 25% of 100 is 25."],
+[3,'I',"What is the binary number 1011 in ordinary numbers?","11","7","13","5","8 + 2 + 1."],
+[3,'I',"What number is the Roman numeral XCIV?","94","114","96","104","XC is 90 and IV is 4."],
+[3,'I',"A clock takes 5 seconds to strike 6 o'clock. How long does it take to strike 12?","11 seconds","10 seconds","12 seconds","6 seconds","6 strikes have 5 gaps; 12 strikes have 11 gaps."],
+[3,'I',"Mina is 7th from the front and 12th from the back of a line. How many people are in the line?","18","19","20","17","7 + 12 - 1."],
+[3,'I',"A water lily doubles in size every day and covers the lake on day 30. On which day was the lake half covered?","Day 29","Day 15","Day 28","Day 20","It doubles from half to full in one day."],
+[3,'I',"A painted cube is cut into 27 equal small cubes. How many have no paint at all?","1","0","6","8","Only the one in the very center."],
+[3,'I',"What comes next: 31, 28, 31, 30, ?","31","29","30","28","Days in the months: May has 31."],
+[3,'I',"What is the smallest number that divides evenly by 1, 2, 3, 4, 5 and 6?","60","30","120","720","30 fails for 4; 60 works for all."],
+[3,'I',"What comes next: 1, 3, 6, 10, 15, ?","21","20","18","25","Add 2, 3, 4, 5, then 6."],
+[3,'I',"A boy walks to school at 4 km/h and back the same way at 6 km/h. What is his average speed?","4.8 km/h","5 km/h","5.2 km/h","4.5 km/h","He spends more time at the slower speed."],
+[3,'I',"Which is bigger: 2 multiplied by itself 10 times, or 10 x 10 x 10?","2 ten times (1,024)","10 x 10 x 10 (1,000)","They are equal","Impossible to tell","1,024 is more than 1,000."],
+[3,'I',"How many digits do you write in total for the numbers 1 to 20?","31","20","29","40","9 single digits plus 11 numbers with two digits."]
+];
+/*QEND*/
+/* Arabic text for every question, in the SAME ORDER as Q.
+   Format: [question, CORRECT answer, wrong, wrong, wrong, optional explanation/reference] */
+const AR=[
+/* ===== سهل: الكتاب المقدس ===== */
+["من بنى الفلك للنجاة من الطوفان العظيم؟","نوح","موسى","إبراهيم","داود"],
+["من هو أول إنسان خلقه الله؟","آدم","نوح","هابيل","شيث"],
+["من هي أول امرأة؟","حواء","سارة","مريم","راعوث"],
+["في أي يوم استراح الله بعد الخليقة؟","اليوم السابع","اليوم الأول","اليوم الثالث","اليوم السادس"],
+["أي نبي ابتلعه حوت عظيم؟","يونان","إيليا","دانيال","إشعياء"],
+["من هزم جليات الجبار؟","داود","شاول","شمشون","يشوع"],
+["في أي مدينة وُلد يسوع؟","بيت لحم","الناصرة","أورشليم","كفرناحوم"],
+["كم رسولاً (تلميذاً) اختار يسوع؟","12","7","10","40"],
+["أي تلميذ خان يسوع؟","يهوذا الإسخريوطي","بطرس","توما","أندراوس"],
+["من أُلقي في جب الأسود؟","دانيال","يوسف","إرميا","يونان"],
+["ما هو أول سفر في الكتاب المقدس؟","التكوين","الخروج","متى","المزامير"],
+["ما هو آخر سفر في الكتاب المقدس؟","الرؤيا","يهوذا","أعمال الرسل","ملاخي"],
+["من قاد بني إسرائيل للخروج من مصر؟","موسى","يشوع","إبراهيم","سليمان"],
+["كم وصية كتبها الله على اللوحين لموسى؟","عشر","سبع","اثنتا عشرة","خمس"],
+["أي بحر شقّه الله أمام بني إسرائيل؟","البحر الأحمر","البحر الميت","بحر الجليل","البحر المتوسط"],
+["من عمّد يسوع؟","يوحنا المعمدان","بطرس","بولس","أندراوس"],
+["في أي نهر اعتمد يسوع؟","الأردن","النيل","الفرات","دجلة"],
+["في عرس قانا الجليل، حوّل يسوع الماء إلى ماذا؟","خمر","لبن","زيت","عسل"],
+["أي ابن من أبناء يعقوب أخذ قميصاً ملوناً؟","يوسف","بنيامين","رأوبين","يهوذا"],
+["كم يوماً وليلة استمر المطر في الطوفان؟","40","7","12","100"],
+["ما العلامة التي أعطاها الله لنوح وعداً بألا يُغرق الأرض كلها مرة أخرى؟","قوس قزح","حمامة","نجم","عليقة مشتعلة"],
+["أي تلميذ أنكر يسوع ثلاث مرات؟","بطرس","يوحنا","يعقوب","فيلبس"],
+["أي ملاك بشّر العذراء مريم بميلاد يسوع؟","جبرائيل","ميخائيل","رافائيل","سوريال"],
+["أشبع يسوع الخمسة آلاف بخمس خبزات وكم سمكة؟","سمكتان","خمس","سبع","اثنتا عشرة"],
+["من صعد إلى جميزة ليرى يسوع؟","زكا","بارتيماوس","نيقوديموس","لعازر"],
+["في أي جنة عاش آدم وحواء؟","عدن","جثسيماني","بابل","الكرمل"],
+["ما الهدايا التي قدمها المجوس ليسوع؟","ذهب ولبان ومر","ذهب وفضة ونحاس","خبز وخمر وزيت","حرير وأطياب ولآلئ"],
+["أي قاضٍ كانت قوته العظيمة مرتبطة بشعره الذي لم يُقص؟","شمشون","جدعون","صموئيل","عالي"],
+["كم إنجيلاً في العهد الجديد؟","أربعة","ثلاثة","خمسة","اثنا عشر","متى ومرقس ولوقا ويوحنا"],
+["أي مخلوق أغوى حواء في الجنة؟","الحية","الأسد","الغراب","الذئب"],
+["من قتل أخاه هابيل؟","قايين","شيث","عيسو","حام"],
+["أكمل الآية: «الرب راعيَّ فلا ... شيء»","يعوزني","يخيفني","يؤذيني","يغلبني","مزمور 23: 1 (مزمور 22 في الأجبية)"],
+["على أي حيوان دخل يسوع أورشليم؟","جحش (حمار)","حصان","جمل","مركبة"],
+["ما البرج الذي بناه الناس ليصلوا إلى السماء؟","بابل","سلوام","أريحا","صهيون"],
+["ما الذي قاد المجوس إلى الطفل يسوع؟","نجم","سحابة","حمامة","عمود نار"],
+["أي طفل وُضع في سفط بين الحلفاء على حافة النهر؟","موسى","صموئيل","إسحاق","يوسف"],
+["من أقامه يسوع بعد أربعة أيام في القبر؟","لعازر","يايرس","استفانوس","زكا"],
+["من كان أخا موسى وأول رئيس كهنة؟","هارون","يشوع","كالب","حور"],
+["كم سنة تاه بنو إسرائيل في البرية؟","40","7","12","70"],
+["ما كانت مهنة يوسف خطيب العذراء مريم؟","نجار","صياد سمك","راعي غنم","عشار"],
+["من كان الأخ التوأم ليعقوب؟","عيسو","لابان","لوط","إسماعيل"],
+["ما الطعام الذي أرسله الله من السماء لبني إسرائيل في البرية؟","المن","التين","خبز الشعير","شهد العسل"],
+/* ===== سهل: العائلة المقدسة ===== */
+["إلى أي بلد هربت العائلة المقدسة؟","مصر","سوريا","اليونان","بلاد فارس"],
+["من قال ليوسف في حلم أن يأخذ الصبي وأمه ويهرب؟","ملاك الرب","المجوس","أحد الرعاة","سمعان الشيخ"],
+["أي ملك أراد أن يهلك الطفل يسوع؟","هيرودس","فرعون","أوغسطس قيصر","نبوخذنصر"],
+["أي إنجيل يروي قصة الهروب إلى مصر؟","متى","مرقس","لوقا","يوحنا"],
+["في أي نهر أبحرت العائلة المقدسة جنوباً في مصر؟","النيل","الأردن","الفرات","دجلة"],
+["متى عادت العائلة المقدسة من مصر؟","بعد موت هيرودس","بعد عيد الفصح","عندما بلغ يسوع اثنتي عشرة سنة","عندما عاد المجوس"],
+["بعد العودة من مصر، في أي مدينة سكنت العائلة المقدسة؟","الناصرة","بيت لحم","أريحا","بيت عنيا"],
+["من هم أفراد العائلة المقدسة؟","يسوع ومريم ويوسف","يسوع ومريم ويوحنا","يسوع وبطرس ومريم","مريم وأليصابات وزكريا"],
+/* ===== سهل: الكنيسة القبطية ===== */
+["أي رسول وإنجيلي أسس كنيسة الإسكندرية؟","القديس مرقس","القديس بطرس","القديس بولس","القديس توما"],
+["البابا القبطي هو بابا أي مدينة؟","الإسكندرية","روما","أنطاكية","القسطنطينية"],
+["في أي تاريخ تحتفل الكنيسة القبطية بعيد الميلاد؟","7 يناير","25 ديسمبر","19 يناير","1 يناير"],
+["من هو البابا الحالي للكنيسة القبطية الأرثوذكسية؟","البابا تواضروس الثاني","البابا شنودة الثالث","البابا كيرلس السادس","البابا ثاؤفيلس"],
+["ما معنى «كيريي ليسون»؟","يا رب ارحم","المسيح قام","قدوس الله","السلام لجميعكم"],
+["أي قديس مصري يُلقَّب «أب الرهبان»؟","الأنبا أنطونيوس","مار مينا","مار جرجس","مار مرقس"],
+["أي حيوان هو رمز القديس مرقس؟","الأسد","النسر","الثور","الحمل"],
+["ما المعنى الأصلي لكلمة «قبطي»؟","مصري","يوناني","راهب","حاج"],
+["ما اسم كتاب صلوات السواعي اليومية في الكنيسة القبطية؟","الأجبية","السنكسار","القطمارس","الإبصلمودية"],
+["في أي يومين من الأسبوع يصوم الأقباط معظم السنة؟","الأربعاء والجمعة","الاثنين والخميس","السبت والأحد","الثلاثاء والجمعة"],
+["كم سراً في الكنيسة القبطية الأرثوذكسية؟","سبعة","اثنان","ثلاثة","اثنا عشر"],
+["من كان البابا القبطي قبل البابا تواضروس الثاني مباشرة؟","البابا شنودة الثالث","البابا كيرلس السادس","البابا يوساب الثاني","البابا أثناسيوس"],
+["ما اسم عيد رأس السنة القبطية؟","النيروز","الغطاس","العنصرة","كيهك"],
+["ما اسم الخبز المقدس الذي يُقدَّم في القداس الإلهي؟","القربان","المن","الأجبية","الميرون"],
+/* ===== سهل: أسئلة ذكاء ===== */
+["ما الرقم التالي: 2، 4، 6، 8، ؟","10","9","12","16","نضيف 2 في كل مرة."],
+["أيها المختلف عن الباقي؟","الجزر","التفاح","الموز","المانجو","الباقي فواكه."],
+["كم شهراً في السنة فيه 28 يوماً؟","كل الشهور (12)","1","2","6","كل شهر فيه 28 يوماً على الأقل."],
+["ما الرقم التالي: 5، 10، 15، 20، ؟","25","22","30","24","نضيف 5 في كل مرة."],
+["أيهما أثقل: كيلو حديد أم كيلو ريش؟","وزنهما متساوٍ","الحديد","الريش","حسب الطقس","كلاهما كيلوجرام واحد بالضبط."],
+["توجد 3 تفاحات وأخذت منها 2. كم تفاحة معك الآن؟","2","1","3","5","أخذت 2، إذن معك 2."],
+["ما عكس كلمة «قديم»؟","حديث","عتيق","ضخم","نادر","القديم عكسه الحديث."],
+["اليد للقفاز مثل القدم لـ ...","الجورب","الساق","الإصبع","القبعة","القفاز يغطي اليد والجورب يغطي القدم."],
+["كم ضلعاً للشكل السداسي؟","6","5","7","8","سداسي يعني ستة أضلاع."],
+["كم يوماً في السنة الكبيسة؟","366","365","364","360","شهر فبراير يزيد يوماً واحداً."],
+["ما الرقم التالي: 1، 3، 5، 7، ؟","9","8","10","11","الأعداد الفردية."],
+["كم يساوي نصف الـ 50 زائد 10؟","35","30","60","25","25 + 10 = 35."],
+["أي شكل ليس له زوايا؟","الدائرة","المربع","المثلث","المستطيل","الدائرة منحنى واحد أملس."],
+["ما الحرف التالي: أ، ت، ج، خ، ؟","ذ","د","ر","ز","نتخطى حرفاً في كل مرة."],
+["الطائر للطيران مثل السمكة لـ ...","السباحة","الماء","القشور","الشبكة","هذه طريقة حركة كل منهما."],
+["ما اليوم التالي: الاثنين، الأربعاء، الجمعة، ؟","الأحد","السبت","الثلاثاء","الخميس","نتخطى يوماً في كل مرة."],
+["أي عدد هو الأكبر؟","0.75","0.5","0.25","0.125","0.75 تساوي ثلاثة أرباع."],
+["كم دقيقة في ساعتين؟","120","60","100","200","60 × 2."],
+["كم يساوي 100 ناقص 37؟","63","73","67","57","100 − 37 = 63."],
+["أيها المختلف عن الباقي؟","المكعب","الدائرة","المربع","المثلث","المكعب مجسم والباقي أشكال مسطحة."],
+["والد سارة له أربع بنات: نانا، نينا، نونا و ... ؟","سارة","نانو","نيني","نونو","سارة ابنته أيضاً."],
+["ما الشيء الذي له عقارب ولا يلدغ؟","الساعة","الشجرة","النهر","الكرسي","للساعة عقرب للساعات وعقرب للدقائق."],
+["ما الرقم الناقص: 10، 20، 30، ؟، 50","40","35","45","25","نعد بالعشرات."],
+["إذا كان اليوم الثلاثاء، فما هو يوم بعد غد؟","الخميس","الأربعاء","الجمعة","الاثنين","الثلاثاء ثم الأربعاء ثم الخميس."],
+["أيها المختلف عن الباقي؟","النسر","الكلب","القطة","البقرة","الباقي من الثدييات."],
+["كم يساوي 9 × 6؟","54","56","45","63","9 × 6 = 54."],
+["كم رِجلاً لثلاث قطط معاً؟","12","9","6","16","3 × 4."],
+["الحار للبارد مثل فوق لـ ...","تحت","عالٍ","السماء","أعلى","كلمتان متضادتان."],
+["رتّب الحروف (د، س، أ) لتكوّن اسم حيوان.","أسد","دب","ذئب","قرد","أ-س-د تكوّن كلمة أسد."],
+["كم بيضة في نصف دستة؟","6","12","3","10","الدستة 12."],
+["كم ضلعاً لمثلثين ومربع معاً؟","10","7","9","12","3 + 3 + 4."],
+["ما الشيء الذي كلما جفّف ازداد بللاً؟","المنشفة (الفوطة)","الشمس","الحجر","الشمعة","المنشفة تبتل وهي تجففك."],
+["ما العدد الذي يزيد 7 على 15؟","22","21","23","12","15 + 7."],
+["ما الحرف التالي: ي، و، هـ، ن، ؟","م","ل","ك","ق","الحروف الأبجدية بالعكس."],
+["أي كلمة تُقرأ من اليمين ومن اليسار بنفس الشكل؟","توت","تين","تمر","ثوم","ت-و-ت."],
+["كم يساوي ربع الـ 20؟","5","4","10","8","20 ÷ 4."],
+["كم سنتيمتراً في المتر الواحد؟","100","10","1,000","60","السنتي تعني جزءاً من مئة."],
+["إذا كان ثمن 5 أقلام 10 جنيهات، فكم ثمن القلم الواحد؟","2 جنيه","5 جنيهات","1 جنيه","50 جنيهاً","10 ÷ 5."],
+["ما الرقم التالي: 1، 2، 4، 8، ؟","16","10","12","14","نضاعف في كل مرة."],
+["القلم للكتابة مثل السكين لـ ...","القطع","الشوكة","الحدة","المطبخ","هذا هو عمل كل أداة."],
+["كم قصّة تحتاج لتقسيم حبل إلى 5 أجزاء؟","4","5","6","3","كل قصّة تضيف جزءاً واحداً."],
+["(أ) أطول من (ب)، و(ب) أطول من (ج). من الأقصر؟","ج","أ","ب","لا يمكن معرفة ذلك","أ أطول من ب، وب أطول من ج."],
+/* ===== متوسط: الكتاب المقدس ===== */
+["من هو أكبر إنسان عمراً في الكتاب المقدس، وعاش 969 سنة؟","متوشالح","نوح","آدم","أخنوخ"],
+["كم ابناً كان ليعقوب؟","12","7","10","14"],
+["من اختير بدلاً من يهوذا بين الرسل؟","متياس","برنابا","سيلا","استفانوس"],
+["ما كان اسم بولس الرسول قبل ذلك؟","شاول","سمعان","سيلا","لاوي"],
+["في الطريق إلى أي مدينة رأى شاول نوراً من السماء؟","دمشق","أريحا","أنطاكية","عمواس"],
+["كم ضربة أرسلها الله على مصر؟","عشر","سبع","اثنتا عشرة","ثلاث"],
+["ما هي أول ضربة على مصر؟","تحويل الماء إلى دم","الضفادع","الظلام","الجراد"],
+["على أي جبل أعطى الله موسى الوصايا العشر؟","جبل سيناء","جبل الكرمل","جبل طابور","جبل أراراط"],
+["من قاد بني إسرائيل بعد موت موسى؟","يشوع","كالب","هارون","جدعون"],
+["أسوار أي مدينة سقطت بعد أن دار بنو إسرائيل حولها؟","أريحا","عاي","نينوى","حبرون"],
+["أي ملك بنى الهيكل الأول في أورشليم؟","سليمان","داود","شاول","حزقيا"],
+["من كانت حماة راعوث؟","نعمي","عُرفة","حنة","دبورة"],
+["أي ملكة خاطرت بحياتها لتنقذ شعبها من هامان؟","أستير","وشتي","بثشبع","إيزابل"],
+["أي نبي صعد إلى السماء في العاصفة ومعه مركبة نارية؟","إيليا","أليشع","أخنوخ","حزقيال"],
+["كم عدد ثمار الروح في رسالة غلاطية؟","تسع","سبع","عشر","اثنتا عشرة"],
+["ما أقصر آية في العهد الجديد؟","«بكى يسوع»","«صلوا بلا انقطاع»","«افرحوا كل حين»","«الله محبة»"],
+["في أي بلدة صنع يسوع أول معجزاته؟","قانا الجليل","كفرناحوم","بيت عنيا","الناصرة"],
+["كم يوماً صام يسوع في البرية؟","40","3","7","21"],
+["من سُخِّر ليحمل صليب يسوع؟","سمعان القيرواني","يوسف الرامي","سمعان بطرس","نيقوديموس"],
+["ما اسم موضع الصلب؟","الجلجثة","جثسيماني","بيت حسدا","جباثا"],
+["من طلب جسد يسوع من بيلاطس؟","يوسف الرامي","سمعان القيرواني","يوحنا الحبيب","لعازر"],
+["أي تلميذ لم يؤمن حتى يرى أثر المسامير؟","توما","فيلبس","برثولماوس","تداوس"],
+["أي رسول كان عشاراً (جابي ضرائب)؟","متى","أندراوس","يعقوب","توما"],
+["أي كاتب إنجيل يسميه بولس الرسول «الطبيب الحبيب»؟","لوقا","مرقس","متى","يوحنا"],
+["من هو أول شهيد في المسيحية؟","استفانوس","يعقوب","فيلبس","برنابا"],
+["في أي عيد حلّ الروح القدس على الرسل؟","يوم الخمسين (العنصرة)","الفصح","المظال","الفوريم"],
+["في أي جزيرة رأى القديس يوحنا الرؤيا؟","بطمس","مالطة","قبرص","كريت"],
+["ما الاسم الجديد الذي أعطاه الله ليعقوب؟","إسرائيل","إبراهيم","يهوذا","يشوع"],
+["بكم من الفضة خان يهوذا يسوع؟","30","20","40","100"],
+["من فسّر لفرعون حلمَي البقرات والسنابل؟","يوسف","دانيال","موسى","هارون"],
+["من كانت أم صموئيل النبي؟","حنة","نعمي","راحيل","أليصابات"],
+["من كان صديق داود المقرّب، ابن الملك شاول؟","يوناثان","أبشالوم","أبنير","يوآب"],
+["من عمّد الخصي الحبشي؟","فيلبس","بطرس","بولس","برنابا"],
+["في المثل، من توقف ليساعد الجريح في طريق أريحا؟","سامري","كاهن","لاوي","فريسي"],
+["شفى يسوع عشرة بُرص. كم واحداً رجع ليشكره؟","واحد","اثنان","خمسة","تسعة"],
+["من كانت أخت موسى؟","مريم","صفورة","دبورة","ليئة"],
+["من هو أول ملك لإسرائيل؟","شاول","داود","سليمان","صموئيل"],
+["من كانت أم يوحنا المعمدان؟","أليصابات","حنة","مرثا","سالومي"],
+["أي رسول كان أخا سمعان بطرس؟","أندراوس","يعقوب","يوحنا","فيلبس"],
+["من ظهر مع يسوع في التجلي؟","موسى وإيليا","إبراهيم وإسحاق","داود وسليمان","إيليا وأليشع"],
+["أي سجين طلب الجمع من بيلاطس أن يطلقه بدلاً من يسوع؟","باراباس","ملخس","قيافا","كليوباس"],
+["أي فريسي جاء إلى يسوع ليلاً؟","نيقوديموس","غمالائيل","قيافا","زكا"],
+["أي امرأة خبأت الجاسوسين في أريحا؟","راحاب","راعوث","دبورة","دليلة"],
+["أي نبي قال: «ها العذراء تحبل وتلد ابناً»؟","إشعياء","إرميا","ميخا","ملاخي"],
+["أي طيور كانت تأتي بالطعام لإيليا النبي؟","الغربان","الحمام","النسور","العصافير"],
+["من أي سبط من أسباط إسرائيل جاء يسوع؟","يهوذا","لاوي","بنيامين","دان"],
+["من كان أبا الملك داود؟","يسى","بوعز","عوبيد","شاول"],
+["من الذي تكلمت أتانه (حمارته)؟","بلعام","بالاق","شمشون","أبشالوم"],
+["من كان أبا يوحنا المعمدان؟","زكريا","سمعان","عالي","يواقيم"],
+/* ===== متوسط: العائلة المقدسة ===== */
+["أي نبي كتب: «من مصر دعوت ابني»؟","هوشع","إشعياء","إرميا","ميخا"],
+["في أي تاريخ تحتفل الكنيسة القبطية بعيد دخول السيد المسيح أرض مصر؟","1 يونيو (24 بشنس)","7 يناير (29 كيهك)","19 يناير (11 طوبة)","11 سبتمبر (1 توت)"],
+["في أي حي بالقاهرة توجد «شجرة مريم» الشهيرة؟","المطرية","الزمالك","شبرا","حلوان"],
+["أي كنيسة في مصر القديمة مبنية فوق مغارة يُعتقد أن العائلة المقدسة أقامت فيها؟","أبو سرجة (القديسين سرجيوس وواخس)","الكنيسة المعلقة","الكاتدرائية المرقسية بالعباسية","كنيسة القديس سمعان الخراز"],
+["في أي دير بأسيوط أقامت العائلة المقدسة أطول مدة؟","دير المحرق","دير الأنبا أنطونيوس","دير الأنبا بيشوي","دير مار مينا"],
+["بحسب التقليد القبطي، كم أقامت العائلة المقدسة في مصر تقريباً؟","أكثر من ثلاث سنوات","نحو أربعين يوماً","نحو ثلاثة أشهر","نحو اثنتي عشرة سنة"],
+["من أي منطقة دخلت العائلة المقدسة مصر؟","شمال سيناء","الصحراء الغربية","النوبة في الجنوب","ميناء الإسكندرية"],
+["أي وادٍ مشهور اليوم بأديرته مرّت به العائلة المقدسة؟","وادي النطرون","وادي الريان","وادي الملوك","وادي رم"],
+["أي نبي تنبأ بأن الرب يأتي إلى مصر «راكباً على سحابة سريعة»؟","إشعياء","حزقيال","دانيال","يونان"],
+["بحسب التقليد القبطي، من رافق العائلة المقدسة في الرحلة؟","سالومي","أليصابات","مريم المجدلية","حنة النبية"],
+/* ===== متوسط: الكنيسة القبطية ===== */
+["ما ترتيب البابا تواضروس الثاني بين باباوات الإسكندرية؟","الـ 118","الـ 100","الـ 117","الـ 120"],
+["من أي سنة يبدأ التقويم القبطي (تقويم الشهداء)؟","284 م","33 م","325 م","451 م"],
+["كم شهراً في السنة القبطية؟","13","12","10","14"],
+["ما هو أول شهور السنة القبطية؟","توت","كيهك","طوبة","مسرى"],
+["كم يوماً مدة الصوم الكبير في الكنيسة القبطية؟","55","40","43","50"],
+["أي قداس هو الأكثر استخداماً في الكنيسة القبطية؟","القداس الباسيلي","القداس الغريغوري","القداس الكيرلسي","قداس القديس يعقوب"],
+["أي بابا للإسكندرية دافع عن الإيمان ضد أريوس؟","القديس أثناسيوس","القديس ديسقورس","القديس ثاؤفيلس","القديس ديمتريوس"],
+["أي قديس مصري أسس حياة الشركة الرهبانية؟","الأنبا باخوميوس","الأنبا بولا أول السواح","الأنبا مكاريوس","الأنبا بيشوي"],
+["أي شهر قبطي قبل عيد الميلاد يشتهر بتسابيح العذراء مريم؟","كيهك","توت","برمهات","بؤونة"],
+["في أي حي بالقاهرة بدأ ظهور العذراء مريم عام 1968؟","الزيتون","المعادي","شبرا","مصر القديمة"],
+["ما الآلتان اللتان تصاحبان الألحان القبطية؟","الناقوس (الدف) والمثلث","الأرغن والقيثارة","الطبلة والناي","الكمان والعود"],
+["كم يوماً مدة صوم يونان (نينوى)؟","3","7","15","40"],
+["كم يوماً مدة صوم السيدة العذراء (من 7 إلى 21 أغسطس)؟","15","3","43","55"],
+["أي كتاب لسير القديسين يُقرأ في القداس القبطي؟","السنكسار","الأجبية","الإبصلمودية","الخولاجي"],
+["ما اسم الحاجز المزيَّن بالصور المقدسة أمام الهيكل؟","حامل الأيقونات","المنجلية","الخورس","المعمودية"],
+["أي قديس ارتبط اسمه بمعجزة نقل جبل المقطم؟","القديس سمعان الخراز","مار مينا","القديس موسى الأسود","الأنبا بيشوي"],
+["عندما يقول الأقباط «إخرستوس آنستي»، ما الرد؟","آليثوس آنستي","كيريي ليسون","آجيوس أوثيئوس","ذوكصابتري"],
+["كم يوماً مدة صوم الميلاد في الكنيسة القبطية؟","43","40","55","15"],
+["في أي تاريخ عيد الغطاس (الظهور الإلهي) في الكنيسة القبطية؟","19 يناير","7 يناير","1 يونيو","11 سبتمبر"],
+["كم صلاة (ساعة) تحتوي الأجبية؟","سبع","ثلاث","خمس","اثنتا عشرة"],
+/* ===== متوسط: أسئلة ذكاء ===== */
+["ما الرقم التالي: 2، 6، 12، 20، 30، ؟","42","40","36","44","الفروق تزيد: 4، 6، 8، 10، 12."],
+["ما الرقم التالي: 1، 1، 2، 3، 5، 8، ؟","13","11","12","16","نجمع الرقمين السابقين."],
+["ما الرقم التالي: 1، 4، 9، 16، ؟","25","20","24","36","مربعات الأعداد: 5 × 5."],
+["مضرب وكرة ثمنهما معاً 110 قروش. المضرب أغلى من الكرة بـ 100 قرش. كم ثمن الكرة؟","5 قروش","10 قروش","1 قرش","15 قرشاً","الكرة 5 والمضرب 105، والمجموع 110."],
+["عند فلاح 17 خروفاً. هربت كلها ما عدا 9. كم بقي؟","9","8","17","0","«ما عدا 9» تعني أن 9 بقيت."],
+["كل «البلوب» هم «رازي»، وكل «الرازي» هم «لازي». إذن عبارة «كل البلوب هم لازي» ...","صحيحة بالتأكيد","خاطئة بالتأكيد","لا يمكن معرفتها","صحيحة أحياناً فقط","إذا كانت الأولى داخل الثانية، والثانية داخل الثالثة، فالأولى داخل الثالثة."],
+["ما الرقم التالي: 3، 6، 12، 24، ؟","48","36","30","46","نضاعف في كل مرة."],
+["أي عدد هو المختلف؟","9","3","5","11","الباقي أعداد أولية."],
+["كم شهراً فيه 31 يوماً؟","7","6","5","8","يناير، مارس، مايو، يوليو، أغسطس، أكتوبر، ديسمبر."],
+["اقسم 30 على نصف، ثم أضف 10. كم الناتج؟","70","25","40","55","30 مقسومة على نصف تساوي 60."],
+["تأخذ أول حبة دواء من 3 حبات الآن، ثم حبة كل نصف ساعة. بعد كم من الوقت تأخذ الأخيرة؟","1 ساعة","ساعة ونصف","30 دقيقة","ساعتان","الآن، ثم بعد 30 دقيقة، ثم بعد 60 دقيقة."],
+["في سباق، سبقتَ المتسابق صاحب المركز الثاني. في أي مركز أنت الآن؟","الثاني","الأول","الثالث","الأخير","أخذت مكان ذلك المتسابق."],
+["ما الرقم التالي: 81، 27، 9، 3، ؟","1","0","2","6","نقسم على 3 في كل مرة."],
+["ما الرقم التالي: 4، 9، 16، 25، 36، ؟","49","42","45","64","7 × 7."],
+["طوبة وزنها 1 كجم زائد نصف طوبة. كم وزن الطوبة؟","2 كجم","1.5 كجم","1 كجم","3 كجم","نصف الطوبة 1 كجم، إذن الطوبة كلها 2 كجم."],
+["كم يساوي 15% من 200؟","30","15","20","35","10% تساوي 20 و5% تساوي 10."],
+["محيط مربع 36 سم. ما مساحته؟","81 سم²","36 سم²","72 سم²","144 سم²","طول الضلع 9 سم؛ 9 × 9 = 81."],
+["أي عدد هو مربع كامل ومكعب كامل معاً؟","64","16","27","100","8 × 8 و 4 × 4 × 4."],
+["أي كلمة تتكون من نفس حروف كلمة «ملح»؟","حلم","حلو","ملك","لحن","ح-ل-م هي نفس الحروف الثلاثة."],
+["الكتاب للقراءة مثل الشوكة لـ ...","الأكل","المطبخ","المعدن","الملعقة","هذا ما يُستخدم كل منهما فيه."],
+["3 دهّانين يدهنون 3 حوائط في 3 ساعات. كم يحتاج دهّان واحد ليدهن حائطاً واحداً؟","3 ساعات","ساعة واحدة","9 ساعات","30 دقيقة","كل دهّان يدهن حائطاً واحداً في 3 ساعات."],
+["ما الحرف التالي: ي، ف، م، أ، م، ي، ؟","ي","أ","س","د","أول حروف الشهور: يناير، فبراير ... يوليو."],
+["قطار يتحرك الساعة 9:40 ويصل الساعة 12:15. كم مدة الرحلة؟","2 ساعة و35 دقيقة","2 ساعة و25 دقيقة","3 ساعات و35 دقيقة","2 ساعة و55 دقيقة","من 9:40 إلى 12:00 ساعتان و20 دقيقة، ثم 15 دقيقة."],
+["ما متوسط الأعداد 10 و20 و30 و40؟","25","20","30","100","100 مقسومة على 4."],
+["ديك باض بيضة فوق قمة سطح مائل. في أي اتجاه تتدحرج البيضة؟","لا تتدحرج: الديك لا يبيض","إلى اليسار","إلى اليمين","إلى الأمام","الدجاجة فقط هي التي تبيض."],
+["إذا كان أمس الجمعة، فما هو يوم بعد غد؟","الاثنين","الأحد","الثلاثاء","السبت","اليوم هو السبت."],
+["ما الرقم التالي: 7، 14، 28، 56، ؟","112","84","96","102","نضاعف في كل مرة."],
+["ما الرقم التالي: 100، 95، 85، 70، ؟","50","55","60","45","نطرح 5 ثم 10 ثم 15 ثم 20."],
+["أيها المختلف عن الباقي؟","القمر","عطارد","الزهرة","المريخ","الباقي كواكب."],
+["كلما أخذت منها أكثر تركت وراءك أكثر. ما هي؟","الخطوات","النقود","الأنفاس","الكتب","كل خطوة تخطوها تبقى خلفك."],
+["كم رِجلاً لأربع دجاجات وثلاث بقرات معاً؟","20","14","28","22","8 + 12."],
+["إذا كان أ=1، ب=2، ت=3، ث=4 وهكذا بترتيب الحروف، فكم يساوي ج + د؟","13","11","12","14","ج = 5 و د = 8."],
+["كم يساوي 2 + 2 × 5؟","12","20","14","9","الضرب أولاً: 2 + 10."],
+["ما الرقم التالي: 2، 3، 5، 7، 11، 13، ؟","17","15","16","19","الأعداد الأولية."],
+["كم حرفاً (ضلعاً) للمكعب؟","12","6","8","10","4 فوق، 4 تحت، 4 قائمة."],
+["ما التالي: أي، بو، ته، ؟","ثن","ثم","جن","ثه","الحرف الأول يتقدم في الأبجدية والثاني يرجع."],
+["ما الرقم التالي: 8، 6، 9، 7، 10، 8، ؟","11","9","6","12","ناقص 2 ثم زائد 3، وهكذا."],
+["قلمان يزنان مثل ممحاة واحدة، و3 مماحٍ تزن مثل مسطرة واحدة. كم قلماً يعادل مسطرتين؟","12","6","10","5","المسطرة = 3 مماحٍ = 6 أقلام."],
+["أي عدد إذا ضُرب في نفسه كان الناتج 169؟","13","12","14","19","13 × 13 = 169."],
+["كم درجة يدور عقرب الدقائق في 20 دقيقة؟","120°","60°","90°","20°","ثلث دورة كاملة (360°)."],
+["إذا كان أول أمس الخميس، فما هو يوم غد؟","الأحد","السبت","الاثنين","الجمعة","اليوم هو السبت."],
+["عدد ضاعفناه ثم أضفنا 6 فكان الناتج 30. ما العدد؟","12","18","15","10","(30 − 6) ÷ 2."],
+["كل قصّة بالمنشار تأخذ 3 دقائق. كم يلزم لتقطيع جذع إلى 6 أجزاء؟","15 دقيقة","18 دقيقة","12 دقيقة","21 دقيقة","6 أجزاء تحتاج 5 قصّات فقط."],
+["4 عمال يبنون حائطاً في 6 أيام. كم يحتاج 8 عمال بنفس السرعة؟","3 أيام","12 يوماً","4 أيام","2 يوم","ضعف العمال يعني نصف الوقت."],
+["سيارة تسير بسرعة 60 كم/س لمدة ساعتين ونصف. كم المسافة؟","150 كم","120 كم","125 كم","180 كم","60 × 2.5."],
+["رميت عملتين معدنيتين. ما احتمال أن تظهر «صورة» في الاثنتين؟","1 من 4","1 من 2","1 من 3","1 من 8","أربعة احتمالات متساوية، واحد منها فقط صورتان."],
+["كم يساوي 15 × 15؟","225","215","255","205","15 × 15 = 225."],
+/* ===== صعب: الكتاب المقدس ===== */
+["أي ملك رأى يداً تكتب على الحائط أثناء وليمة؟","بيلشاصر","نبوخذنصر","داريوس","كورش"],
+["من كان أبا متوشالح، الذي «سار مع الله»؟","أخنوخ","لامك","يارد","شيث"],
+["أي ملك لشاليم وكاهن لله العلي بارك أبرام؟","ملكي صادق","أبيمالك","يثرون","أدوني صادق"],
+["أي قاضٍ من قضاة إسرائيل كان أعسر؟","إهود","عثنيئيل","يفتاح","شمجر"],
+["أي امرأة كانت نبية وقاضية لإسرائيل معاً؟","دبورة","ياعيل","خلدة","مريم"],
+["بكم رجل هزم جدعون المديانيين؟","300","1,000","3,000","10,000"],
+["كم سنة أضاف الله إلى عمر الملك حزقيا؟","15","7","10","40"],
+["أي نبي واجه داود بعد خطيته مع بثشبع؟","ناثان","صموئيل","جاد","إيليا"],
+["أي قائد أرامي شُفي من البرص بعد أن اغتسل في الأردن؟","نعمان","جيحزي","بنهدد","حزائيل"],
+["على أي جبل تحدى إيليا أنبياء البعل؟","جبل الكرمل","جبل سيناء","جبل حرمون","جبل نبو"],
+["على أي جزيرة انكسرت السفينة ببولس الرسول؟","مالطة","بطمس","قبرص","كريت"],
+["أي شاب نام وسقط من الطاقة بينما كان بولس يعظ؟","أفتيخوس","تيخيكس","تيموثاوس","أنسيمس"],
+["من كان معلم بولس الرسول في الناموس؟","غمالائيل","قيافا","نيقوديموس","حنان"],
+["أي من هذه ليست من الكنائس السبع في سفر الرؤيا؟","كورنثوس","سميرنا","ساردس","ثياتيرا"],
+["أي كنيسة في سفر الرؤيا وُصفت بأنها «فاترة»؟","لاودكية","أفسس","فيلادلفيا","برغامس"],
+["أي بائعة أرجوان من ثياتيرا اعتمدت هي وأهل بيتها؟","ليدية","بريسكلا","فيبي","طابيثا (غزالة)"],
+["في أي مدينة دُعي التلاميذ «مسيحيين» أولاً؟","أنطاكية","أورشليم","الإسكندرية","أفسس"],
+["أي عبد هارب أعاده بولس إلى فليمون؟","أنسيمس","أبفراس","تيخيكس","أرخبس"],
+["كم كان عمر يسوع عندما بقي في الهيكل بين المعلمين؟","12","7","10","30"],
+["أي رجل بار حمل الطفل يسوع على ذراعيه في الهيكل وبارك الله؟","سمعان","زكريا","نيقوديموس","غمالائيل"],
+["ما اسم عبد رئيس الكهنة الذي قطع بطرس أذنه؟","ملخس","باراباس","كليوباس","روفس"],
+["عند أي بركة شفى يسوع رجلاً مريضاً منذ 38 سنة؟","بيت حسدا","سلوام","جيحون","جبعون"],
+["كم سمكة كبيرة كانت في الشبكة بعد القيامة في يوحنا 21؟","153","72","120","276"],
+["كم سنة خدم يعقوب لابان من أجل ابنتيه؟","14","7","10","21"],
+["بكم من الفضة باع إخوة يوسف أخاهم؟","20","30","12","50"],
+["من كانت زوجة موسى؟","صفورة","مريم","يوكابد","قطورة"],
+["كم كان عمر موسى عند موته؟","120","80","100","175"],
+["من أي جبل رأى موسى أرض الموعد قبل موته؟","جبل نبو","جبل سيناء","جبل الكرمل","جبل صهيون"],
+["أي جاسوسين قدّما تقريراً أميناً عن أرض الموعد؟","يشوع وكالب","موسى وهارون","ألداد وميداد","ناداب وأبيهو"],
+["إلى أي أرض قيل لإبراهيم أن يأخذ إسحاق ليقدمه محرقة؟","المُريّا","جاسان","مديان","حاران"],
+["أي ابن لسليمان ملك بعده؟","رحبعام","يربعام","أبشالوم","أدونيا"],
+["أي ملك فارسي نادى أولاً بأن يعود اليهود ويبنوا الهيكل؟","كورش","أحشويروش","أرتحشستا","نبوخذنصر"],
+["أي نبي أُمر أن يتزوج جومر؟","هوشع","عاموس","يوئيل","ميخا"],
+["أي نبي رأى وادي العظام اليابسة؟","حزقيال","إرميا","زكريا","دانيال"],
+["أي نبي تنبأ بأن المدبّر يخرج من بيت لحم؟","ميخا","عاموس","حبقوق","ناحوم"],
+["كم كان عمر نوح عندما جاء الطوفان؟","600","100","500","950"],
+["من أُرسل مع بولس في رحلته التبشيرية الأولى؟","برنابا","سيلا","تيموثاوس","أبلوس"],
+["أي زوجين كذبا في ثمن الحقل فسقطا ميتين؟","حنانيا وسفيرة","أكيلا وبريسكلا","زكريا وأليصابات","بوعز وراعوث"],
+["كُتب عنوان الصليب بالعبرانية واليونانية وأي لغة أخرى؟","اللاتينية","الآرامية","القبطية","الفارسية"],
+["من أي سبط كان بولس الرسول؟","بنيامين","يهوذا","لاوي","أفرايم"],
+["ماذا أخرجت عصا هارون عندما أفرخت؟","لوزاً","تيناً","زيتوناً","عنباً"],
+["أي قائد مئة في قيصرية قيل له في رؤيا أن يستدعي بطرس؟","كرنيليوس","يوليوس","كلوديوس ليسياس","بوبليوس"],
+["أي رسولين سماهما يسوع «ابنَي الرعد»؟","يعقوب ويوحنا","بطرس وأندراوس","فيلبس وبرثولماوس","سمعان ويهوذا"],
+["من أي مدينة خرجت عائلة أبرام أولاً؟","أور الكلدانيين","نينوى","بابل","دمشق"],
+["من كان حما موسى، كاهن مديان؟","يثرون","لابان","عالي","بالاق"],
+["أي ملك لبابل خرّب أورشليم وهيكلها؟","نبوخذنصر","بيلشاصر","سنحاريب","كورش"],
+["من قاد إعادة بناء أسوار أورشليم؟","نحميا","عزرا","زربابل","حجي"],
+/* ===== صعب: العائلة المقدسة ===== */
+["كم أقامت العائلة المقدسة في موضع دير المحرق؟","ستة أشهر وعشرة أيام","أربعين يوماً","ثلاث سنوات","أسبوعاً واحداً"],
+["أي جبل قرب أسيوط هو بحسب التقليد آخر محطة للعائلة المقدسة في أقصى الجنوب؟","جبل درنكة","جبل سيناء","جبل المقطم","جبل طابور"],
+["على أي جبل قرب سمالوط توجد كنيسة للعذراء تطل على النيل حيث استراحت العائلة المقدسة؟","جبل الطير","جبل قسقام","جبل درنكة","جبل المقطم"],
+["في أي مدينة بالدلتا يُحفظ حجر يُقال إن عليه أثر قدم الطفل يسوع؟","سخا","طنطا","دمياط","رشيد"],
+["بأي اسم يُعرف دير المحرق كثيراً؟","بيت لحم الثانية","أورشليم الجديدة","الناصرة الثانية","باب السماء"],
+["الرواية التقليدية لمسار العائلة المقدسة جاءت من رؤيا أي بابا للإسكندرية؟","البابا ثاؤفيلس (الـ 23)","البابا أثناسيوس (الـ 20)","البابا كيرلس الأول (الـ 24)","البابا ديمتريوس (الـ 12)"],
+["أي مدينة قديمة قرب الزقازيق كانت من أوائل محطات العائلة المقدسة؟","تل بسطا","الأقصر","منف","أبيدوس"],
+["من أي ضاحية بالقاهرة أبحرت العائلة المقدسة جنوباً في النيل؟","المعادي","الجيزة","حلوان","إمبابة"],
+["أي آية ترتبط بمذبح دير المحرق: «مذبح للرب في وسط أرض مصر»؟","إشعياء 19: 19","هوشع 11: 1","ميخا 5: 2","إرميا 31: 15"],
+["لماذا تجنب يوسف اليهودية وسكن في الجليل عند العودة؟","لأن أرخيلاوس كان يملك على اليهودية","لوجود مجاعة في اليهودية","لأن الهيكل كان قد هُدم","لأن الطرق كانت مغلقة"],
+["من أي مدينة قديمة، تُسمى أيضاً بيلوزيوم، دخلت العائلة المقدسة مصر؟","الفرما","تانيس","طيبة","منف"],
+["أي أصحاح في سفر إشعياء يقول: «مبارك شعبي مصر»؟","إشعياء 19","إشعياء 7","إشعياء 53","إشعياء 40"],
+/* ===== صعب: الكنيسة القبطية ===== */
+["من هو أول من آمن على يد القديس مرقس في الإسكندرية وصار البطريرك الثاني؟","إنيانوس الإسكافي","بنتينوس المعلم","ديمتريوس الكرّام","سمعان الخراز"],
+["في مجمع أفسس (431م)، دافع القديس كيرلس عن أي لقب للعذراء مريم؟","ثيئوطوكوس (والدة الإله)","خريستوطوكوس (والدة المسيح)","ملكة السماء","الدائمة البتولية"],
+["الأبجدية القبطية تستخدم الحروف اليونانية وكم حرفاً من الديموطيقية المصرية؟","7","3","10","12"],
+["في عهد أي بابا حدثت معجزة نقل جبل المقطم؟","البابا أبرآم بن زرعة (الـ 62)","البابا كيرلس الرابع (الـ 110)","البابا بطرس الأول (الـ 17)","البابا بنيامين الأول (الـ 38)"],
+["كم صليباً صغيراً يحيط بالجزء الأوسط (الإسباديقون) في القربانة؟","12","7","4","24"],
+["ما ترتيب القديس أثناسيوس الرسولي بين باباوات الإسكندرية؟","الـ 20","الأول","الـ 24","الـ 50"],
+["ما اسم الشهر الثالث عشر القصير في السنة القبطية؟","النسيء (الشهر الصغير)","مسرى","أبيب","أمشير"],
+["في أي سنة أُعيدت رفات القديس مرقس من إيطاليا إلى مصر؟","1968","1952","1900","2000"],
+["أي معلم لأكليمنضس قاد مدرسة الإسكندرية اللاهوتية نحو سنة 180م؟","بنتينوس","أوريجانوس","ديديموس الضرير","أريوس"],
+["أي مجمع سنة 451م لم تقبله الكنيسة القبطية؟","خلقيدونية","نيقية","القسطنطينية","أفسس"],
+["كتب القديس أثناسيوس السيرة الشهيرة لأي قديس؟","الأنبا أنطونيوس","القديس مرقس","الأنبا باخوميوس","الأنبا مكاريوس"],
+["كم ديراً قديماً ما زال عامراً في وادي النطرون؟","أربعة","اثنان","سبعة","اثنا عشر"],
+["أي قديس مصري كان قائد الكتيبة الطيبية؟","القديس موريس","مار جرجس","مار مينا","القديس مرقوريوس (أبو سيفين)"],
+["ما ترتيب البابا كيرلس السادس بين باباوات الإسكندرية؟","الـ 116","الـ 115","الـ 117","الـ 118"],
+["ما الاسم القديم لبرية وادي النطرون الرهبانية؟","شيهيت (الإسقيط)","طيبة","جاسان","الخمس مدن الغربية"],
+["مع كم عذراء استشهدت القديسة دميانة؟","40","7","12","100"],
+["أي من هذه هو أحد الأعياد السيدية الصغرى السبعة؟","عيد التجلي","عيد الميلاد","عيد القيامة","عيد العنصرة"],
+["في أي سنة، بحسب التقليد، استشهد القديس مرقس في الإسكندرية؟","68 م","33 م","150 م","284 م"],
+["كم ثقباً في القربانة يرمز إلى جراحات السيد المسيح؟","5","3","7","12"],
+["من كان بابا الإسكندرية وقت مجمع خلقيدونية، وتكرمه الكنيسة القبطية كمعترف؟","القديس ديسقورس","القديس كيرلس","القديس تيموثاوس","القديس بطرس خاتم الشهداء"],
+/* ===== صعب: أسئلة ذكاء ===== */
+["5 ماكينات تصنع 5 لعب في 5 دقائق. كم تحتاج 100 ماكينة لصنع 100 لعبة؟","5 دقائق","100 دقيقة","20 دقيقة","1 دقيقة","كل ماكينة تصنع لعبة واحدة في 5 دقائق."],
+["ما الزاوية بين عقربي الساعة عند 3:15؟","7.5°","0°","15°","30°","عقرب الساعات تحرك ربع المسافة نحو الرقم 4."],
+["كم مرة يظهر الرقم 9 عند كتابة الأعداد من 1 إلى 100؟","20","10","11","19","10 مرات في الآحاد و10 مرات في العشرات."],
+["ما الحرف التالي: و، ا، ث، أ، خ، س، س، ؟","ث","ت","ع","و","أول حروف الأعداد: واحد، اثنان، ثلاثة ... ثمانية."],
+["كم مربعاً بكل الأحجام في شبكة 3 × 3؟","14","9","10","13","9 صغيرة + 4 متوسطة + 1 كبير."],
+["بنت عدد إخوتها يساوي عدد أخواتها، لكن كل أخ عدد إخوته نصف عدد أخواته. كم عدد الأبناء؟","7 (4 بنات و3 أولاد)","5 (3 بنات و2 أولاد)","6 (3 بنات و3 أولاد)","9 (5 بنات و4 أولاد)","البنت لها 3 إخوة و3 أخوات؛ والولد له أخوان و4 أخوات."],
+["أب عمره 40 سنة وابنه 10 سنوات. بعد كم سنة يصير عمر الأب ضعف عمر ابنه؟","20","10","15","30","وقتها يكون عمرهما 60 و30."],
+["ما التالي: 1، 11، 21، 1211، 111221، ؟","312211","122221","211211","1112221","كل رقم يصف الذي قبله: ثلاث مرات 1، مرتان 2، مرة 1."],
+["ما مجموع كل الأعداد الصحيحة من 1 إلى 100؟","5,050","5,000","10,100","4,950","50 زوجاً مجموع كل منها 101."],
+["حلزون في بئر عمقها 10 أمتار، يصعد 3 أمتار كل نهار وينزلق مترين كل ليلة. في أي يوم يخرج؟","اليوم 8","اليوم 10","اليوم 7","اليوم 9","بعد 7 ليالٍ يكون عند 7 أمتار؛ وفي اليوم 8 يصعد إلى 10."],
+["كم مرة يتطابق عقربا الساعة في 12 ساعة؟","11","12","10","24","يلتقيان كل 65 دقيقة تقريباً."],
+["من بين 9 كرات متشابهة، واحدة أثقل. بميزان ذي كفتين، ما أقل عدد من الوزنات يكفي دائماً لمعرفتها؟","2","3","4","1","نزن 3 مقابل 3، ثم 1 مقابل 1."],
+["في درج مظلم 10 جوارب سوداء و10 بيضاء. كم جورباً يجب أن تسحب لتضمن زوجاً من نفس اللون؟","3","2","11","10","يوجد لونان فقط، فالجورب الثالث يطابق أحد الاثنين."],
+["6 قطط تصطاد 6 فئران في 6 دقائق. كم قطة تلزم لاصطياد 100 فأر في 100 دقيقة؟","6","100","60","16","6 قطط تصطاد فأراً كل دقيقة."],
+["ما الرقم التالي: 1، 8، 27، 64، ؟","125","100","81","216","مكعبات الأعداد: 5 × 5 × 5."],
+["ما الرقم التالي: 3، 4، 7، 11، 18، 29، ؟","47","40","45","58","نجمع الرقمين السابقين."],
+["ما الرقم التالي: 2، 5، 10، 17، 26، ؟","37","35","36","39","مربعات الأعداد زائد 1: 36 + 1."],
+["5 أشخاص، كل واحد يصافح كل الآخرين مرة واحدة. كم مصافحة؟","10","20","25","15","4 + 3 + 2 + 1."],
+["رجل يشير إلى صورة ويقول: «ليس لي إخوة ولا أخوات، لكن أبو هذا الرجل هو ابن أبي». من في الصورة؟","ابنه","هو نفسه","أبوه","عمه","«ابن أبي» هو المتكلم نفسه."],
+["أول يناير يوم اثنين. ما يوم 31 يناير؟","الأربعاء","الثلاثاء","الخميس","الاثنين","يوم 29 يناير اثنين، إذن 31 أربعاء."],
+["سعر 100 زاد 10% ثم نقص 10%. ما السعر النهائي؟","99","100","101","90","110 ناقص 11."],
+["ما الرقم التالي: 6، 11، 21، 36، 56، ؟","81","76","86","71","نضيف 5 ثم 10 ثم 15 ثم 20 ثم 25."],
+["إذا كان أ=1، ب=2، ت=3، ث=4، ج=5، ح=6، خ=7، د=8 وهكذا، فكم مجموع حروف كلمة «أحد»؟","15","14","16","13","1 + 6 + 8."],
+["ثلاثة أعداد متتالية مجموعها 72. ما أكبرها؟","25","24","26","23","23 + 24 + 25."],
+["قطار طوله 1 كم يسير بسرعة 60 كم/س داخل نفق طوله 1 كم. كم يمر من لحظة دخوله حتى يخرج كله؟","2 دقيقة","1 دقيقة","90 ثانية","3 دقائق","عليه أن يقطع 2 كم بسرعة 1 كم في الدقيقة."],
+["دجاجة ونصف تبيض بيضة ونصفاً في يوم ونصف. كم بيضة تبيض 3 دجاجات في 3 أيام؟","6","3","9","4.5","ضعف الدجاج وضعف الوقت: 1.5 × 4."],
+["ما الرقم التالي: 1، 2، 6، 24، 120، ؟","720","240","600","360","نضرب في 2 ثم 3 ثم 4 ثم 5 ثم 6."],
+["ما مجموع الزوايا الداخلية للشكل الخماسي؟","540°","360°","450°","720°","ثلاثة مثلثات: 3 × 180°."],
+["أبوان وابنان ذهبوا للصيد، واصطاد كل واحد سمكة، لكن المجموع 3 سمكات فقط. كيف؟","هم جد وأب وابن","هربت سمكة","اثنان تقاسما سمكة","واحد منهم لم يصطد","الأب هو أب وابن في نفس الوقت."],
+["كم يساوي 25% من 25% من 400؟","25","100","50","6.25","25% من 400 تساوي 100؛ و25% من 100 تساوي 25."],
+["ما قيمة العدد الثنائي 1011 بالأعداد العادية؟","11","7","13","5","8 + 2 + 1."],
+["ما قيمة الرقم الروماني XCIV؟","94","114","96","104","XC تساوي 90 و IV تساوي 4."],
+["ساعة حائط تستغرق 5 ثوانٍ لتدق 6 دقات. كم تستغرق لتدق 12 دقة؟","11 ثانية","10 ثوانٍ","12 ثانية","6 ثوانٍ","6 دقات بينها 5 فواصل؛ و12 دقة بينها 11 فاصلاً."],
+["مينا ترتيبه السابع من أول الطابور والثاني عشر من آخره. كم شخصاً في الطابور؟","18","19","20","17","7 + 12 − 1."],
+["زنبقة ماء يتضاعف حجمها كل يوم وتغطي البحيرة في اليوم 30. في أي يوم كانت تغطي نصف البحيرة؟","اليوم 29","اليوم 15","اليوم 28","اليوم 20","تتضاعف من النصف إلى الكل في يوم واحد."],
+["مكعب مدهون قُطّع إلى 27 مكعباً صغيراً متساوياً. كم مكعباً ليس عليه أي دهان؟","1","0","6","8","المكعب الذي في المركز فقط."],
+["ما الرقم التالي: 31، 28، 31، 30، ؟","31","29","30","28","عدد أيام الشهور: مايو 31."],
+["ما أصغر عدد يقبل القسمة على 1 و2 و3 و4 و5 و6؟","60","30","120","720","30 لا تقبل القسمة على 4؛ أما 60 فتقبلها كلها."],
+["ما الرقم التالي: 1، 3، 6، 10، 15، ؟","21","20","18","25","نضيف 2 ثم 3 ثم 4 ثم 5 ثم 6."],
+["ولد يذهب إلى المدرسة بسرعة 4 كم/س ويعود من نفس الطريق بسرعة 6 كم/س. ما متوسط سرعته؟","4.8 كم/س","5 كم/س","5.2 كم/س","4.5 كم/س","يقضي وقتاً أطول بالسرعة الأقل."],
+["أيهما أكبر: 2 مضروبة في نفسها 10 مرات، أم 10 × 10 × 10؟","2 عشر مرات (1,024)","10 × 10 × 10 (1,000)","متساويان","لا يمكن معرفة ذلك","1,024 أكبر من 1,000."],
+["كم رقماً (خانة) تكتب في المجموع للأعداد من 1 إلى 20؟","31","20","29","40","9 أعداد من خانة واحدة و11 عدداً من خانتين."]
+];
+
+
+/* ================= game ================= */
+const KEY='festivalTrivia.v1', PTS={1:10,2:20,3:30};
+const DNAME={1:'Easy',2:'Medium',3:'Hard'};
+const CNAME={B:'Bible',H:'Holy Family in Egypt',C:'Coptic Church',I:'Brain teaser'};
+let S={players:{},used:[]}, turn=null;
+const DNAME_AR={1:'\u0633\u0647\u0644',2:'\u0645\u062a\u0648\u0633\u0637',3:'\u0635\u0639\u0628'};
+const CNAME_AR={B:'الكتاب المقدس',H:'العائلة المقدسة في مصر',C:'الكنيسة القبطية',I:'سؤال ذكاء'};
+const BOOKS={'1 Samuel':'صموئيل الأول','2 Samuel':'صموئيل الثاني','1 Kings':'الملوك الأول','2 Kings':'الملوك الثاني',
+'Genesis':'تكوين','Exodus':'خروج','Numbers':'عدد','Deuteronomy':'تثنية','Joshua':'يشوع','Judges':'قضاة','Ruth':'راعوث',
+'Ezra':'عزرا','Nehemiah':'نحميا','Esther':'أستير','Psalm':'مزمور','Isaiah':'إشعياء','Jeremiah':'إرميا','Ezekiel':'حزقيال',
+'Daniel':'دانيال','Hosea':'هوشع','Jonah':'يونان','Micah':'ميخا','Matthew':'متى','Mark':'مرقس','Luke':'لوقا','John':'يوحنا',
+'Acts':'أعمال الرسل','Galatians':'غلاطية','Philippians':'فيلبي','Colossians':'كولوسي','Philemon':'فليمون','Hebrews':'عبرانيين','Revelation':'رؤيا'};
+const BOOKRE=new RegExp('('+Object.keys(BOOKS).join('|')+')(?= \\d)','g');
+const WORDS=[['Coptic liturgical tradition','التقليد الطقسي القبطي'],['Coptic Synaxarium','السنكسار القبطي'],['Synaxarium','السنكسار'],
+['Liturgy of St. Basil','القداس الباسيلي'],['Kiahk praises','تسابيح كيهك'],['Paschal greeting','تحية القيامة'],
+['Baramouda','برمودة'],['Tobi','طوبة'],['Wikipedia','ويكيبيديا']];
+function arRef(r){r=r.replace(BOOKRE,m=>BOOKS[m]);WORDS.forEach(w=>{r=r.split(w[0]).join(w[1]);});return r.replace(/;/g,'\u061B');}
+const $=id=>document.getElementById(id);
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
+
+function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);if(o&&o.players&&Array.isArray(o.used))S=o;}}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* Choose a question of difficulty d. Prefers ones nobody has had yet, and never one this player has seen if avoidable. */
+function pick(d,wantIQ,p,taken){
+  const all=[];Q.forEach((q,i)=>{if(q[0]===d&&!taken.includes(i))all.push(i);});
+  const iq=i=>Q[i][1]==='I', fresh=i=>!S.used.includes(i)&&!p.seen.includes(i);
+  let c=all.filter(i=>iq(i)===wantIQ&&fresh(i));
+  if(!c.length)c=all.filter(fresh);
+  if(!c.length){S.used=S.used.filter(i=>Q[i][0]!==d);c=all.filter(i=>iq(i)===wantIQ&&!p.seen.includes(i));}
+  if(!c.length)c=all.filter(i=>!p.seen.includes(i));
+  if(!c.length){p.seen=p.seen.filter(i=>Q[i][0]!==d);c=all;}
+  return c[Math.floor(Math.random()*c.length)];
+}
+
+function renderBoard(bumpKey){
+  const list=$('list');list.textContent='';
+  const arr=Object.entries(S.players).sort((a,b)=>b[1].score-a[1].score||a[1].name.localeCompare(b[1].name));
+  if(!arr.length)list.appendChild(el('li','empty','No players yet. Type a name and press GO.'));
+  arr.forEach(([k,p],i)=>{
+    const li=el('li','row'+(turn&&turn.key===k?' active':'')+(bumpKey===k?' bump':''));
+    li.appendChild(el('span','rk',i+1));
+    const nm=el('span','nm',p.name);nm.appendChild(el('small','',p.plays+(p.plays===1?' turn':' turns')));li.appendChild(nm);
+    li.appendChild(el('span','pt',p.score));
+    const del=el('button','del','\u00D7');del.setAttribute('aria-label','Remove '+p.name);
+    del.onclick=ev=>{ev.stopPropagation();if(confirm('Remove '+p.name+' from the scoreboard?')){delete S.players[k];save();renderBoard();}};
+    li.appendChild(del);
+    li.onclick=()=>{const inp=$('nameInput');if(inp){inp.value=p.name;}};
+    list.appendChild(li);
+  });
+  const act=list.querySelector('.active');if(act&&act.scrollIntoView)act.scrollIntoView({block:'nearest'});
+  $('stat').textContent=arr.length+(arr.length===1?' player':' players')+' \u00B7 '+(Q.length-S.used.length)+' of '+Q.length+' questions not used yet';
+}
+
+function showStart(){
+  turn=null;$('pill').textContent='';
+  const v=$('view');v.textContent='';v.dir='ltr';
+  const c=el('div','center');
+  c.appendChild(el('div','kicker','Bible \u00B7 Holy Family in Egypt \u00B7 Coptic Church \u00B7 Brain teasers'));
+  c.appendChild(el('div','big','Who is playing?'));
+  c.appendChild(el('p','sub','Three questions per turn: easy (10), medium (20), hard (30).'));
+  const inp=el('input','name');inp.id='nameInput';inp.type='text';inp.placeholder='Player name';inp.maxLength=24;
+  inp.autocomplete='off';inp.setAttribute('autocapitalize','words');inp.setAttribute('autocorrect','off');inp.spellcheck=false;
+  const go=el('button','go','GO'), yalla=el('button','go ar','\u064A\u0644\u0627 \u0628\u064A\u0646\u0627');
+  yalla.lang='ar';yalla.dir='rtl';
+  go.onclick=()=>startTurn(inp,'en');
+  yalla.onclick=()=>startTurn(inp,'ar');
+  inp.onkeydown=e=>{if(e.key==='Enter')startTurn(inp,'en');};
+  const gos=el('div','gos');gos.appendChild(go);gos.appendChild(yalla);
+  c.appendChild(inp);c.appendChild(gos);
+  c.appendChild(el('div','hint','Playing again? Tap a name on the scoreboard to fill it in. Points add to the same player.'));
+  v.appendChild(c);renderBoard();
+}
+
+function startTurn(inp,lang){
+  const name=inp.value.replace(/\s+/g,' ').trim();
+  if(!name){inp.classList.remove('shake');void inp.offsetWidth;inp.classList.add('shake');inp.focus();return;}
+  inp.blur();
+  const key=name.toLowerCase();
+  if(!S.players[key])S.players[key]={name:name,score:0,plays:0,seen:[]};
+  const p=S.players[key];p.plays++;
+  const kinds=shuffle([false,true,Math.random()<0.45]);   /* at least one religious and one brain teaser */
+  const qs=[];[1,2,3].forEach((d,n)=>qs.push(pick(d,kinds[n],p,qs)));
+  turn={key:key,qs:qs,n:0,res:[],gained:0,lang:lang};
+  save();showQuestion();
+}
+
+function showQuestion(){
+  const p=S.players[turn.key], qi=turn.qs[turn.n], q=Q[qi], d=q[0], isIQ=q[1]==='I';
+  if(!S.used.includes(qi))S.used.push(qi);
+  if(!p.seen.includes(qi))p.seen.push(qi);
+  save();
+  const L=turn.lang==='ar', a=L?AR[qi]:null;
+  const qText=L?a[0]:q[2], right0=L?a[1]:q[3], pool=L?a.slice(1,5):[q[3],q[4],q[5],q[6]];
+  const refText=L?(a[5]||arRef(q[7])):q[7];
+  $('pill').textContent=L?'السؤال '+(turn.n+1)+' من 3':'Question '+(turn.n+1)+' of 3';
+  const v=$('view');v.textContent='';v.scrollTop=0;v.dir=L?'rtl':'ltr';
+  const head=el('div','qhead');
+  head.appendChild(el('span','who',p.name));
+  head.appendChild(el('span','tag'+(isIQ?' iq':''),(L?CNAME_AR:CNAME)[q[1]]));
+  head.appendChild(el('span','tag d'+d,L?DNAME_AR[d]+' \u00B7 '+PTS[d]+' نقطة':DNAME[d]+' \u00B7 '+PTS[d]+' pts'));
+  v.appendChild(head);
+  const steps=el('div','steps');
+  for(let i=0;i<3;i++)steps.appendChild(el('i',i<turn.n?(turn.res[i]?'ok':'no'):(i===turn.n?'now':'')));
+  v.appendChild(steps);
+  v.appendChild(el('h2','qtext',qText));
+  const opts=el('div','opts'), answers=shuffle(pool), after=el('div','after');
+  answers.forEach((ans,i)=>{
+    const b=el('button','opt');b.appendChild(el('b','',(L?'أبجد':'ABCD')[i]));b.appendChild(el('span','',ans));
+    b.onclick=()=>{
+      if(turn.locked)return;turn.locked=true;
+      const right=ans===right0;
+      [...opts.children].forEach((o,j)=>{o.classList.add('done');if(answers[j]===right0)o.classList.add('right');});
+      if(!right)b.classList.add('wrong');
+      turn.res.push(right);
+      if(right){p.score+=PTS[d];turn.gained+=PTS[d];}
+      save();renderBoard(right?turn.key:null);
+      steps.children[turn.n].className=right?'ok':'no';
+      after.appendChild(el('span','fb '+(right?'ok':'no'),L?(right?'إجابة صحيحة! كسبت '+PTS[d]+' نقطة':'ليست هذه. الإجابة: '+right0):(right?'Correct! +'+PTS[d]+' points':'Not this time. Answer: '+q[3])));
+      const nx=el('button','next',L?(turn.n<2?'السؤال التالي':'إنهاء الدور'):(turn.n<2?'Next question':'Finish turn'));
+      nx.onclick=()=>{turn.locked=false;turn.n++;if(turn.n<3)showQuestion();else showSummary();};
+      after.appendChild(nx);
+      after.appendChild(el('div','ref',(L?(isIQ?'السبب: ':'المرجع: '):(isIQ?'Why: ':'Reference: '))+refText));
+      nx.scrollIntoView({block:'nearest'});
+    };
+    opts.appendChild(b);
+  });
+  v.appendChild(opts);v.appendChild(after);renderBoard();
+}
+
+function showSummary(){
+  const p=S.players[turn.key], t=turn;
+  $('pill').textContent='';
+  const L=t.lang==='ar';
+  const v=$('view');v.textContent='';v.dir=L?'rtl':'ltr';
+  const c=el('div','center');
+  c.appendChild(el('div','kicker',p.name));
+  const sb=el('div','score-big','+'+t.gained);sb.dir='ltr';c.appendChild(sb);
+  c.appendChild(el('p','sub',L?'نقطة في هذا الدور \u00B7 المجموع '+p.score:'points this turn \u00B7 total '+p.score));
+  const dots=el('div','dots');t.res.forEach(r=>dots.appendChild(el('span',r?'ok':'no',r?'\u2713':'\u00D7')));c.appendChild(dots);
+  const b=el('button','go'+(L?' ar':''),L?'اللاعب التالي':'NEXT PLAYER');b.style.fontSize='22px';b.onclick=showStart;c.appendChild(b);
+  v.appendChild(c);
+  turn=null;renderBoard(t.key);
+}
+
+$('bSrc').onclick=()=>$('ov').classList.add('on');
+$('bClose').onclick=()=>$('ov').classList.remove('on');
+$('ov').onclick=e=>{if(e.target===$('ov'))$('ov').classList.remove('on');};
+$('bEdit').onclick=()=>{const on=$('board').classList.toggle('edit');$('bEdit').textContent=on?'Done':'Edit';};
+$('bReset').onclick=()=>{
+  if(!confirm('Start a new game? This erases ALL names and scores.'))return;
+  if(!confirm('Are you sure? This cannot be undone.'))return;
+  S={players:{},used:[]};save();showStart();
+};
+
+load();showStart();
+</script>
+</body>
+</html>
